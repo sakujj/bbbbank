@@ -14,7 +14,7 @@ import java.time.LocalDate;
 public class Account implements Entity<String>{
     private String id;
     private Long clientId;
-    private Long bankIdentificationNumber;
+    private Long bankId;
     private BigDecimal moneyAmount;
     private Currency currency;
     private LocalDate dateWhenOpened;
