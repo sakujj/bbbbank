@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id("io.freefair.lombok") version "8.2.2"
+    id 'application'
 }
 
 group = 'by.sakujj'
@@ -9,6 +10,10 @@ version = '1.0-SNAPSHOT'
 java {
     sourceCompatibility '17'
     targetCompatibility '17'
+}
+
+application {
+    mainClass = 'by.sakujj.ApplicationRunner'
 }
 
 repositories {
@@ -20,6 +25,9 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.6.0'
     // https://mvnrepository.com/artifact/org.mindrot/jbcrypt
     implementation 'org.mindrot:jbcrypt:0.4'
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+
 
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
@@ -29,4 +37,14 @@ dependencies {
 test {
     useJUnitPlatform()
     maxParallelForks = Runtime.runtime.availableProcessors()
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": application.mainClass
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
