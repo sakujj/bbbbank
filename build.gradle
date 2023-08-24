@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+    id("io.freefair.lombok") version "8.2.2"
+}
+
+group = 'by.sakujj'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility '17'
+    targetCompatibility '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    implementation 'org.postgresql:postgresql:42.6.0'
+    // https://mvnrepository.com/artifact/org.mindrot/jbcrypt
+    implementation 'org.mindrot:jbcrypt:0.4'
+
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+    maxParallelForks = Runtime.runtime.availableProcessors()
+}
