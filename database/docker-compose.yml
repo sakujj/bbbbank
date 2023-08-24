@@ -1,0 +1,11 @@
+services:
+  postgres:
+    container_name: sakujj_postgres_clever_bank
+    build: .
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - sakujj_pg_data_clever_bank:/var/lib/postgresql/data
+
+volumes:
+  sakujj_pg_data_clever_bank:
