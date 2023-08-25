@@ -2,6 +2,7 @@ package test.integration.dao;
 
 import by.sakujj.connectionpool.ConnectionPool;
 import by.sakujj.dao.BankDAO;
+import by.sakujj.exceptions.DaoException;
 import by.sakujj.model.Bank;
 import lombok.AccessLevel;
 import lombok.SneakyThrows;
@@ -9,42 +10,51 @@ import lombok.experimental.FieldDefaults;
 
 import static org.assertj.core.api.Assertions.*;
 
-import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import test.integration.connectionpool.TestConnectionPool;
-import test.integration.listeners.CloseTestConnectionPoolListener;
+
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
 @FieldDefaults(level = AccessLevel.PUBLIC)
 public class BankDaoTests {
     private final BankDAO bankDAO = BankDAO.getInstance();
-    private final ConnectionPool connectionPool = TestConnectionPool.getInstance();
 
+    private static final ConnectionPool connectionPool = TestConnectionPool.getInstance();
+    private Connection connection = null;
+
+    @BeforeEach
+    void openConnection() throws DaoException {
+        connection = connectionPool.getConnection();
+    }
+
+    @AfterEach
+    void closeConnection() throws SQLException {
+        connection.close();
+    }
 
     @Nested
     @DisplayName("findById (Long id, Connection connection)")
     class findById_Long_Connection {
-        @SneakyThrows
+
         @ParameterizedTest
         @MethodSource("shouldReturnRightBankSource")
-        void shouldReturnRightBank(Long id, Bank expected) {
-            try (Connection connection = connectionPool.getConnection()) {
-                Bank actual = bankDAO.findById(id, connection).get();
-                assertThat(actual).isEqualTo(expected);
-            }
+        void shouldReturnRightBank(Long id, Bank expected) throws DaoException {
+            Bank actual = bankDAO.findById(id, connection).get();
+            assertThat(actual).isEqualTo(expected);
         }
 
 
@@ -68,14 +78,11 @@ public class BankDaoTests {
             );
         }
 
-        @SneakyThrows
         @ParameterizedTest
         @MethodSource("shouldReturnOptionalEmptySource")
-        void shouldReturnOptionalEmpty(Long id) {
-            try (Connection connection = connectionPool.getConnection()) {
+        void shouldReturnOptionalEmpty(Long id) throws DaoException {
                 Optional<Bank> actual = bankDAO.findById(id, connection);
                 assertThat(actual).isEmpty();
-            }
         }
 
         static LongStream shouldReturnOptionalEmptySource() {
@@ -93,10 +100,8 @@ public class BankDaoTests {
         @ParameterizedTest
         @MethodSource("shouldReturnAllBanksSource")
         void shouldReturnAllBanks(List<Bank> expected) {
-            try (Connection connection = connectionPool.getConnection()) {
                 List<Bank> actual = bankDAO.findAll(connection);
                 assertThat(actual).containsAll(expected);
-            }
         }
 
         static Stream<Arguments> shouldReturnAllBanksSource() {
