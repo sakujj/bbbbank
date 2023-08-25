@@ -8,21 +8,14 @@ import java.util.Properties;
 
 @UtilityClass
 public class PropertiesUtil {
-    private static final Properties PROPERTIES = new Properties();
 
-    static {
-        loadProperties();
-    }
-
-    private static void loadProperties() {
-        try(InputStream inputStream = PropertiesUtil.class.getClassLoader().getResourceAsStream("application.properties")){
-            PROPERTIES.load(inputStream);
+    public static Properties newProperties(String filename) {
+        try(InputStream inputStream = PropertiesUtil.class.getClassLoader().getResourceAsStream(filename)){
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            return properties;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    public static String getByKey(String key) {
-        return PROPERTIES.getProperty(key);
-    };
 }

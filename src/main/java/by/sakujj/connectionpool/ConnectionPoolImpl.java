@@ -7,41 +7,45 @@ import lombok.SneakyThrows;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 
 public class ConnectionPoolImpl implements ConnectionPool {
-    private static final String URL_KEY = PropertiesUtil.getByKey("db.url");
-    private static final String USER_KEY = PropertiesUtil.getByKey("db.user");
-    private static final String PASSWORD_KEY = PropertiesUtil.getByKey("db.password");
-    private static final String DRIVER_KEY = PropertiesUtil.getByKey("db.driver.qualified_name");
+    private static final String PROPERTY_FILE = "application.properties";
+    private static final Properties PROPERTIES = PropertiesUtil.newProperties(PROPERTY_FILE);
+
+    private static final String URL_KEY = PROPERTIES.getProperty("db.url");
+    private static final String USER_KEY = PROPERTIES.getProperty("db.user");
+    private static final String PASSWORD_KEY = PROPERTIES.getProperty("db.password");
+    private static final String DRIVER_KEY = PROPERTIES.getProperty("db.driver.qualified_name");
     private static final int MAX_POOL_SIZE;
     private static final int MIN_IDLE;
     private static final int MAX_LIFETIME;
     private static final int IDLE_TIMEOUT;
 
     static {
-        String property = PropertiesUtil.getByKey("db.pool.max_size");
+        String property = PROPERTIES.getProperty("db.pool.max_size");
         if (property == null) {
             MAX_POOL_SIZE = 10;
         } else {
             MAX_POOL_SIZE = Integer.parseInt(property);
         }
 
-        property = PropertiesUtil.getByKey("db.pool.min_idle");
+        property = PROPERTIES.getProperty("db.pool.min_idle");
         if (property == null) {
             MIN_IDLE = 10;
         } else {
             MIN_IDLE = Integer.parseInt(property);
         }
 
-        property = PropertiesUtil.getByKey("db.pool.max_lifetime");
+        property = PROPERTIES.getProperty("db.pool.max_lifetime");
         if (property == null) {
             MAX_LIFETIME = 1_800_000;
         } else {
             MAX_LIFETIME = Integer.parseInt(property);
         }
 
-        property = PropertiesUtil.getByKey("db.pool.idle_timeout");
+        property = PROPERTIES.getProperty("db.pool.idle_timeout");
         if (property == null) {
             IDLE_TIMEOUT = 600_000;
         } else {
