@@ -11,14 +11,14 @@ public class SqlQueries {
         return """
                 SELECT *
                     FROM %s
-                WHERE %s = ?
+                WHERE %s = ?;
                 """.formatted(tableName, idAttributeName);
     }
 
     public static String getSelectAll(String tableName) {
         return """
                 SELECT *
-                    FROM %s
+                    FROM %s;
                 """.formatted(tableName);
     }
 
@@ -27,7 +27,7 @@ public class SqlQueries {
         return """
                 UPDATE %s
                 %s
-                WHERE %s = ?
+                WHERE %s = ?;
                 """.formatted(
                 tableName,
                 attributesToUpdate
@@ -41,7 +41,7 @@ public class SqlQueries {
     public static String getDeleteById(String tableName, String idAttributeName) {
         return """
                 DELETE FROM %s
-                WHERE %s = ?
+                WHERE %s = ?;
                 """.formatted(tableName, idAttributeName);
     }
 
