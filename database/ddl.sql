@@ -7,10 +7,7 @@ CREATE TABLE
     CONSTRAINT bank_pk
         PRIMARY KEY (bank_id),
     CONSTRAINT bank_identification_number_length_chk
-        CHECK (
-                    length(cast(bank_id AS VARCHAR)) > 10
-                AND length(cast(bank_id AS VARCHAR)) < 12
-            )
+        CHECK (length(cast(bank_id AS VARCHAR)) = 11)
 );
 
 CREATE TABLE
@@ -48,11 +45,14 @@ CREATE TABLE
     CONSTRAINT account_pk
         PRIMARY KEY (account_id),
     CONSTRAINT account_client_fk
-        FOREIGN KEY (client_id) REFERENCES Client (client_id),
+        FOREIGN KEY (client_id) REFERENCES Client (client_id)
+            ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT account_bank_fk
-        FOREIGN KEY (bank_id) REFERENCES Bank (bank_id),
+        FOREIGN KEY (bank_id) REFERENCES Bank (bank_id)
+            ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT account_currency_fk
-        FOREIGN KEY (currency_id) REFERENCES Currency (currency_id),
+        FOREIGN KEY (currency_id) REFERENCES Currency (currency_id)
+            ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT account_money_amount_not_negative
         CHECK ( money_amount >= 0)
 );
@@ -76,13 +76,16 @@ CREATE TABLE
     type                    VARCHAR(20)                             NOT NULL,
 
     CONSTRAINT monetary_transaction_pk
-        PRIMARY KEY(monetary_transaction_id),
+        PRIMARY KEY (monetary_transaction_id),
     CONSTRAINT monetary_transaction_sender_account_fk
-        FOREIGN KEY (sender_account_id) REFERENCES Account (account_id),
+        FOREIGN KEY (sender_account_id) REFERENCES Account (account_id)
+            ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT monetary_transaction_receiver_account_fk
-        FOREIGN KEY (receiver_account_id) REFERENCES Account (account_id),
+        FOREIGN KEY (receiver_account_id) REFERENCES Account (account_id)
+            ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT monetary_transaction_type_fk
-        FOREIGN KEY (type) REFERENCES MonetaryTransactionType (type),
+        FOREIGN KEY (type) REFERENCES MonetaryTransactionType (type)
+            ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT monetary_transaction_different_accounts_chk
         CHECK (sender_account_id != receiver_account_id),
     CONSTRAINT money_transaction_money_amount_not_negative
