@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id("io.freefair.lombok") version "8.2.2"
     id 'application'
+    id 'jacoco'
 }
 
 group = 'by.sakujj'
@@ -21,23 +22,14 @@ repositories {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation 'org.postgresql:postgresql:42.6.0'
-    // https://mvnrepository.com/artifact/org.mindrot/jbcrypt
     implementation 'org.mindrot:jbcrypt:0.4'
-    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation 'com.zaxxer:HikariCP:5.0.1'
-
-
-// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
     implementation 'ch.qos.logback:logback-classic:1.4.11'
 
-// https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
     testImplementation 'org.junit.platform:junit-platform-launcher:1.10.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.0.0-M4'
-    // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation 'org.assertj:assertj-core:3.24.2'
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -46,6 +38,19 @@ dependencies {
 test {
     useJUnitPlatform()
     maxParallelForks = Runtime.runtime.availableProcessors()
+
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+
+    dependsOn test // tests are required to run before generating the report
 }
 
 jar {
@@ -53,7 +58,6 @@ jar {
     manifest {
         attributes "Main-Class": application.mainClass
     }
-
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
