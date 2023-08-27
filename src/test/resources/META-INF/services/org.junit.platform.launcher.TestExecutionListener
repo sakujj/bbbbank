@@ -1,1 +1,1 @@
-test.integration.listeners.CloseTestConnectionPoolListener
+test.integration.listeners.CloseConnectionPoolListener

@@ -50,6 +50,15 @@ jacocoTestReport {
         html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
 
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "by/sakujj/**/exceptions/*",
+                    "by/sakujj/**/model/*",
+            ])
+        }))
+    }
+
     dependsOn test // tests are required to run before generating the report
 }
 

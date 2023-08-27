@@ -1,6 +1,7 @@
 package test.integration.connection;
 
-import by.sakujj.connectionpool.ConnectionPool;
+import by.sakujj.connection.ConnectionPool;
+import by.sakujj.connection.ConnectionPoolImpl;
 import by.sakujj.exceptions.DAOException;
 import lombok.Getter;
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +13,8 @@ import java.sql.SQLException;
 
 @Getter
 public class AbstractConnectionRelatedTests {
-    private static final ConnectionPool connectionPool = TestConnectionPool.getInstance();
+    private static final ConnectionPool connectionPool
+            = ConnectionPoolImpl.getInstance(ConnectionPoolImpl.TEST_PROPERTIES);
 
     private boolean doRollback = false;
     private Connection connection = null;
