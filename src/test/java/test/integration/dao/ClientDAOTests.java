@@ -4,12 +4,14 @@ import by.sakujj.dao.ClientDAO;
 import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.Bank;
 import by.sakujj.model.Client;
+import by.sakujj.model.MonetaryTransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import test.integration.connection.AbstractConnectionRelatedTests;
 import test.integration.connection.Rollback;
 
@@ -181,6 +183,20 @@ public class ClientDAOTests extends AbstractConnectionRelatedTests {
             ).isInstanceOf(DAOException.class);
 
         }
+
+        @Rollback
+        @ParameterizedTest
+        @MethodSource
+        void shouldNotUpdateNonExisting(Client clientToUpdate) throws DAOException {
+            boolean isUpdated = clientDAO.update(clientToUpdate, getConnection());
+
+            assertThat(isUpdated).isFalse();
+        }
+
+        static Stream<Client> shouldNotUpdateNonExisting() {
+            return shouldUpdateClient()
+                    .peek(c -> c.setId(c.getId() + 1234L));
+        }
     }
 
     @Nested
@@ -198,6 +214,15 @@ public class ClientDAOTests extends AbstractConnectionRelatedTests {
 
         static Stream<Client> shouldDeleteClient() {
             return findById.shouldReturnCorrectClient().limit(3);
+        }
+
+        @Rollback
+        @ParameterizedTest
+        @ValueSource(longs = {22L, 555L})
+        void shouldNotDeleteNonExisting(Long idToDelete) throws DAOException {
+            boolean isDeleted = clientDAO.deleteById(idToDelete, getConnection());
+
+            assertThat(isDeleted).isFalse();
         }
     }
 }

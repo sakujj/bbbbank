@@ -3,6 +3,7 @@ package test.integration.dao;
 import by.sakujj.dao.AccountDAO;
 import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.Account;
+import by.sakujj.model.Client;
 import by.sakujj.model.Currency;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -168,6 +169,19 @@ public class AccountDAOTests extends AbstractConnectionRelatedTests {
                     );
         }
 
+        @Rollback
+        @ParameterizedTest
+        @MethodSource
+        void shouldNotUpdateNonExisting(Account accountToUpdate) throws DAOException {
+            boolean isUpdated = accountDAO.update(accountToUpdate, getConnection());
+
+            assertThat(isUpdated).isFalse();
+        }
+
+        static Stream<Account> shouldNotUpdateNonExisting() {
+            return shouldUpdateAccount()
+                    .peek(a -> a.setId(a.getId() + 1234L));
+        }
     }
 
     @Nested
@@ -185,6 +199,15 @@ public class AccountDAOTests extends AbstractConnectionRelatedTests {
 
         static Stream<Account> shouldDeleteAccount() {
             return findById.shouldReturnCorrectAccount();
+        }
+
+        @Rollback
+        @ParameterizedTest
+        @ValueSource(strings = {"22L", "555L"})
+        void shouldNotDeleteNonExisting(String idToDelete) throws DAOException {
+            boolean isDeleted = accountDAO.deleteById(idToDelete, getConnection());
+
+            assertThat(isDeleted).isFalse();
         }
     }
 }

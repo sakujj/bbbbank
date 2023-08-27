@@ -3,6 +3,7 @@ package test.integration.dao;
 import by.sakujj.dao.BankDAO;
 import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.Bank;
+import by.sakujj.model.Client;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import test.integration.connection.AbstractConnectionRelatedTests;
 import test.integration.connection.Rollback;
 
@@ -109,12 +111,23 @@ public class BankDAOTests extends AbstractConnectionRelatedTests {
     @Nested
     @DisplayName("save (Bank, Connection)")
     class save {
+        @Rollback
+        @ParameterizedTest
+        @MethodSource
+        void shouldNotSaveAlreadyExisting(Bank bankToSave) {
+            assertThatThrownBy(()->
+                    bankDAO.save(bankToSave, getConnection())
+            ).isInstanceOf(DAOException.class);
+        }
 
+        static Stream<Bank> shouldNotSaveAlreadyExisting() {
+            return findById.shouldReturnRightBank().limit(3);
+        }
 
         @Rollback
         @ParameterizedTest
         @MethodSource
-        void shouldSaveBank(Bank bankToSave) throws DAOException, SQLException {
+        void shouldSaveBank(Bank bankToSave) throws DAOException {
             bankDAO.save(bankToSave, getConnection());
             Optional<Bank> actual = bankDAO.findById(bankToSave.getId(), getConnection());
 
@@ -131,27 +144,38 @@ public class BankDAOTests extends AbstractConnectionRelatedTests {
             );
         }
 
-        @Nested
-        @DisplayName("deleteById (Long, Connection)")
-        class deleteById {
-            @Rollback
-            @ParameterizedTest
-            @MethodSource
-            void shouldDeleteBank(Bank bankToDelete) throws DAOException {
-                bankDAO.deleteById(bankToDelete.getId(), getConnection());
-                Optional<Bank> bank = bankDAO.findById(bankToDelete.getId(), getConnection());
 
-                assertThat(bank).isEmpty();
-            }
+    }
 
-            static Stream<Bank> shouldDeleteBank() {
-                return Stream.of(
-                        Bank.builder()
-                                .id(12345678910L)
-                                .name("Clever-bank")
-                                .build()
-                );
-            }
+    @Nested
+    @DisplayName("deleteById (Long, Connection)")
+    class deleteById {
+        @Rollback
+        @ParameterizedTest
+        @MethodSource
+        void shouldDeleteBank(Bank bankToDelete) throws DAOException {
+            bankDAO.deleteById(bankToDelete.getId(), getConnection());
+            Optional<Bank> bank = bankDAO.findById(bankToDelete.getId(), getConnection());
+
+            assertThat(bank).isEmpty();
+        }
+
+        static Stream<Bank> shouldDeleteBank() {
+            return Stream.of(
+                    Bank.builder()
+                            .id(12345678910L)
+                            .name("Clever-bank")
+                            .build()
+            );
+        }
+
+        @Rollback
+        @ParameterizedTest
+        @ValueSource(longs = {22L, 555L})
+        void shouldNotDeleteNonExisting(Long idToDelete) throws DAOException {
+            boolean isDeleted = bankDAO.deleteById(idToDelete, getConnection());
+
+            assertThat(isDeleted).isFalse();
         }
     }
 
@@ -176,6 +200,20 @@ public class BankDAOTests extends AbstractConnectionRelatedTests {
                             .name("xxxxxxxxxxx")
                             .build()
             );
+        }
+
+        @Rollback
+        @ParameterizedTest
+        @MethodSource
+        void shouldNotUpdateNonExisting(Bank bankToUpdate) throws DAOException {
+            boolean isUpdated = bankDAO.update(bankToUpdate, getConnection());
+
+            assertThat(isUpdated).isFalse();
+        }
+
+        static Stream<Bank> shouldNotUpdateNonExisting() {
+            return shouldUpdateBank()
+                    .peek(b -> b.setId(b.getId() + 1234L));
         }
     }
 }
