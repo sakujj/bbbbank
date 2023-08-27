@@ -1,7 +1,7 @@
-package test.integration.connectionpool;
+package test.integration.connection;
 
 import by.sakujj.connectionpool.ConnectionPool;
-import by.sakujj.exceptions.DaoException;
+import by.sakujj.exceptions.DAOException;
 import by.sakujj.util.PropertiesUtil;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.SneakyThrows;
@@ -64,11 +64,11 @@ public class TestConnectionPool implements ConnectionPool {
         return INSTANCE;
     }
 
-    public Connection getConnection() throws DaoException {
+    public Connection getConnection() throws DAOException {
         try {
             return dataSource.getConnection();
         } catch (SQLException e) {
-            throw new DaoException(e);
+            throw new DAOException(e);
         }
     }
 
