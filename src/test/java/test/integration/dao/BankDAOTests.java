@@ -1,7 +1,7 @@
 package test.integration.dao;
 
 import by.sakujj.dao.BankDAO;
-import by.sakujj.exceptions.DaoException;
+import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.Bank;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -27,7 +27,7 @@ import static org.junit.jupiter.params.provider.Arguments.*;
 
 @Slf4j
 @FieldDefaults(level = AccessLevel.PUBLIC)
-public class BankDaoTests extends AbstractConnectionRelatedTests {
+public class BankDAOTests extends AbstractConnectionRelatedTests {
     private final BankDAO bankDAO = BankDAO.getInstance();
 
     @Nested
@@ -36,7 +36,7 @@ public class BankDaoTests extends AbstractConnectionRelatedTests {
 
         @ParameterizedTest
         @MethodSource
-        void shouldReturnRightBank(Long id, Bank expected) throws DaoException {
+        void shouldReturnRightBank(Long id, Bank expected) throws DAOException {
             Optional<Bank> actual = bankDAO.findById(id, getConnection());
 
             assertThat(actual).isPresent();
@@ -65,7 +65,7 @@ public class BankDaoTests extends AbstractConnectionRelatedTests {
 
         @ParameterizedTest
         @MethodSource
-        void shouldReturnOptionalEmpty(Long id) throws DaoException {
+        void shouldReturnOptionalEmpty(Long id) throws DAOException {
             Optional<Bank> actual = bankDAO.findById(id, getConnection());
 
             assertThat(actual).isEmpty();
@@ -84,7 +84,7 @@ public class BankDaoTests extends AbstractConnectionRelatedTests {
 
         @ParameterizedTest
         @MethodSource
-        void shouldReturnAllBanks(List<Bank> expected) throws DaoException {
+        void shouldReturnAllBanks(List<Bank> expected) throws DAOException {
             List<Bank> actual = bankDAO.findAll(getConnection());
 
             assertThat(actual).containsAll(expected);
@@ -132,7 +132,7 @@ public class BankDaoTests extends AbstractConnectionRelatedTests {
         @Rollback
         @ParameterizedTest
         @MethodSource
-        void shouldSaveBank(Bank bankToSave) throws DaoException, SQLException {
+        void shouldSaveBank(Bank bankToSave) throws DAOException, SQLException {
             bankDAO.save(bankToSave, getConnection());
             Optional<Bank> actual = bankDAO.findById(bankToSave.getId(), getConnection());
 
@@ -156,7 +156,7 @@ public class BankDaoTests extends AbstractConnectionRelatedTests {
         @Rollback
         @ParameterizedTest
         @MethodSource
-        void shouldDeleteBank(Bank bankToDelete) throws DaoException {
+        void shouldDeleteBank(Bank bankToDelete) throws DAOException {
             bankDAO.deleteById(bankToDelete.getId(), getConnection());
             Optional<Bank> bank = bankDAO.findById(bankToDelete.getId(), getConnection());
 
@@ -179,7 +179,7 @@ public class BankDaoTests extends AbstractConnectionRelatedTests {
         @Rollback
         @ParameterizedTest
         @MethodSource
-        void shouldUpdateBank(Bank bankToUpdate) throws DaoException {
+        void shouldUpdateBank(Bank bankToUpdate) throws DAOException {
             bankDAO.update(bankToUpdate, getConnection());
             Optional<Bank> bankAfterUpdate = bankDAO.findById(bankToUpdate.getId(), getConnection());
 

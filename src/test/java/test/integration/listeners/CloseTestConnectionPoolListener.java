@@ -2,7 +2,7 @@ package test.integration.listeners;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
-import test.integration.connectionpool.TestConnectionPool;
+import test.integration.connection.TestConnectionPool;
 
 
 @Slf4j
