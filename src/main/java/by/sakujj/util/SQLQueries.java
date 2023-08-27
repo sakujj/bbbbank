@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @UtilityClass
-public class SqlQueries {
+public class SQLQueries {
     public static String getSelectById(String tableName, String idAttributeName) {
         return """
                 SELECT *
@@ -26,13 +26,14 @@ public class SqlQueries {
                                        List<String> attributesToUpdate) {
         return """
                 UPDATE %s
+                \tSET
                 %s
                 WHERE %s = ?;
                 """.formatted(
                 tableName,
                 attributesToUpdate
                         .stream()
-                        .map("\tSET %s = ?"::formatted)
+                        .map("\t%s = ?"::formatted)
                         .collect(Collectors.joining(",\n")),
                 idAttributeName);
 
