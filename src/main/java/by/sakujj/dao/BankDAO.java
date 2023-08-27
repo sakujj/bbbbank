@@ -46,7 +46,7 @@ public class BankDAO implements DAO<Bank, Long> {
             ID_COLUMN_NAME
     );
 
-    private static final String INSERT_BY_ID = SQLQueries.getInsert(
+    private static final String INSERT = SQLQueries.getInsert(
             TABLE_NAME,
             List.of("bank_id", "name")
     );
@@ -90,7 +90,7 @@ public class BankDAO implements DAO<Bank, Long> {
 
     @Override
     public Long save(Bank obj, Connection connection) throws DAOException {
-        try (PreparedStatement statement = connection.prepareStatement(INSERT_BY_ID)){
+        try (PreparedStatement statement = connection.prepareStatement(INSERT)){
             statement.setObject(1, obj.getId());
             statement.setObject(2, obj.getName());
 

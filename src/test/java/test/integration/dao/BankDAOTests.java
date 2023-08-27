@@ -25,10 +25,8 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.params.provider.Arguments.*;
 
-@Slf4j
-@FieldDefaults(level = AccessLevel.PUBLIC)
 public class BankDAOTests extends AbstractConnectionRelatedTests {
-    private final BankDAO bankDAO = BankDAO.getInstance();
+    private static final BankDAO bankDAO = BankDAO.getInstance();
 
     @Nested
     @DisplayName("findById (Long, Connection)")
@@ -36,31 +34,15 @@ public class BankDAOTests extends AbstractConnectionRelatedTests {
 
         @ParameterizedTest
         @MethodSource
-        void shouldReturnRightBank(Long id, Bank expected) throws DAOException {
-            Optional<Bank> actual = bankDAO.findById(id, getConnection());
+        void shouldReturnRightBank(Bank expected) throws DAOException {
+            Optional<Bank> actual = bankDAO.findById(expected.getId(), getConnection());
 
             assertThat(actual).isPresent();
             assertThat(actual.get()).isEqualTo(expected);
         }
 
-        static Stream<Arguments> shouldReturnRightBank() {
-            Long id1 = 12345678910L;
-            Long id2 = 12345678911L;
-            Long id3 = 12345678914L;
-            return Stream.of(
-                    arguments(id1, Bank.builder()
-                            .id(id1)
-                            .name("Clever-bank")
-                            .build()),
-                    arguments(id2, Bank.builder()
-                            .id(id2)
-                            .name("Belbank")
-                            .build()),
-                    arguments(id3, Bank.builder()
-                            .id(id3)
-                            .name("Белорусский банкинг")
-                            .build())
-            );
+        static Stream<Bank> shouldReturnRightBank() {
+            return findAll.shouldReturnAllBanks().flatMap(List::stream);
         }
 
         @ParameterizedTest
@@ -148,28 +130,28 @@ public class BankDAOTests extends AbstractConnectionRelatedTests {
                             .build()
             );
         }
-    }
 
-    @Nested
-    @DisplayName("deleteById (Long, Connection)")
-    class deleteById {
-        @Rollback
-        @ParameterizedTest
-        @MethodSource
-        void shouldDeleteBank(Bank bankToDelete) throws DAOException {
-            bankDAO.deleteById(bankToDelete.getId(), getConnection());
-            Optional<Bank> bank = bankDAO.findById(bankToDelete.getId(), getConnection());
+        @Nested
+        @DisplayName("deleteById (Long, Connection)")
+        class deleteById {
+            @Rollback
+            @ParameterizedTest
+            @MethodSource
+            void shouldDeleteBank(Bank bankToDelete) throws DAOException {
+                bankDAO.deleteById(bankToDelete.getId(), getConnection());
+                Optional<Bank> bank = bankDAO.findById(bankToDelete.getId(), getConnection());
 
-            assertThat(bank).isEmpty();
-        }
+                assertThat(bank).isEmpty();
+            }
 
-        static Stream<Bank> shouldDeleteBank() {
-            return Stream.of(
-                    Bank.builder()
-                            .id(12345678910L)
-                            .name("Clever-bank")
-                            .build()
-            );
+            static Stream<Bank> shouldDeleteBank() {
+                return Stream.of(
+                        Bank.builder()
+                                .id(12345678910L)
+                                .name("Clever-bank")
+                                .build()
+                );
+            }
         }
     }
 
