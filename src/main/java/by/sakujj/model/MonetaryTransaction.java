@@ -14,10 +14,8 @@ import java.time.LocalDateTime;
 public class MonetaryTransaction implements Entity<Long> {
     private Long id;
     private LocalDateTime timeWhenCommitted;
-    private Long senderBankId;
-    private Long receiverBankId;
     private String senderAccountId;
     private String receiverAccountId;
     private BigDecimal moneyAmount;
-    private MonetaryTransactionType type;
+private MonetaryTransactionType type;
 }
