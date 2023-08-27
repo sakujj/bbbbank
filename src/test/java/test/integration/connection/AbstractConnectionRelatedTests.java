@@ -2,7 +2,6 @@ package test.integration.connection;
 
 import by.sakujj.connection.ConnectionPool;
 import by.sakujj.connection.ConnectionPoolImpl;
-import by.sakujj.exceptions.DAOException;
 import lombok.Getter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +13,13 @@ import java.sql.SQLException;
 @Getter
 public class AbstractConnectionRelatedTests {
     private static final ConnectionPool connectionPool
-            = ConnectionPoolImpl.getInstance(ConnectionPoolImpl.TEST_PROPERTIES);
+            = ConnectionPoolImpl.getTestInstance();
 
     private boolean doRollback = false;
     private Connection connection = null;
 
     @BeforeEach
-    void openConnection(TestInfo testInfo) throws DAOException, SQLException {
+    void openConnection(TestInfo testInfo) throws SQLException {
         connection = connectionPool.getConnection();
 
         doRollback = testInfo.getTestMethod().get().getAnnotation(Rollback.class) != null;

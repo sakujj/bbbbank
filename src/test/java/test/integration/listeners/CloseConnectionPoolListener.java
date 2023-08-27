@@ -7,6 +7,6 @@ import org.junit.platform.launcher.TestPlan;
 public class CloseConnectionPoolListener implements TestExecutionListener {
     @Override
     public void testPlanExecutionFinished(TestPlan testPlan) {
-        ConnectionPoolImpl.getInstance(ConnectionPoolImpl.TEST_PROPERTIES).close();
+        ConnectionPoolImpl.getTestInstance().close();
     }
 }

@@ -14,29 +14,36 @@ import java.util.Properties;
 @Slf4j
 public class ConnectionPoolImpl implements ConnectionPool{
 
-    private static ConnectionPoolImpl instance;
+    private static ConnectionPoolImpl productionInstance;
+    private static ConnectionPoolImpl testInstance;
+
     private final HikariDataSource dataSource;
 
     public static final String TEST_PROPERTIES = "test.properties";
-    public static final String APP_PROPERTIES = "application.properties";
+    public static final String PROD_PROPERTIES = "application.properties";
 
     private ConnectionPoolImpl(String propertiesFileName){
-        currentPropertiesFileName = propertiesFileName;
+        this.propertiesFileName = propertiesFileName;
         Properties properties = PropertiesUtil.newProperties(propertiesFileName);
         dataSource = newHikariDataSource(properties);
     }
 
-    private static String currentPropertiesFileName;
+    private final String propertiesFileName;
 
-    public static ConnectionPoolImpl getInstance(String propertiesFileName) {
-        if (instance == null
-                || currentPropertiesFileName.equals(propertiesFileName) == false) {
-            if (instance != null)
-                instance.close();
-            instance = new ConnectionPoolImpl(propertiesFileName);
+    public static ConnectionPoolImpl getProductionInstance() {
+        if (productionInstance == null) {
+            productionInstance = new ConnectionPoolImpl(PROD_PROPERTIES);
         }
 
-        return instance;
+        return productionInstance;
+    }
+
+    public static ConnectionPoolImpl getTestInstance() {
+        if (testInstance == null) {
+            testInstance = new ConnectionPoolImpl(TEST_PROPERTIES);
+        }
+
+        return testInstance;
     }
 
     @SneakyThrows
@@ -59,6 +66,6 @@ public class ConnectionPoolImpl implements ConnectionPool{
     @Override
     public void close() {
         dataSource.close();
-        log.info("CP associated with '%s' has been closed".formatted(currentPropertiesFileName));
+        log.info("CP associated with '%s' has been closed".formatted(propertiesFileName));
     }
 }
