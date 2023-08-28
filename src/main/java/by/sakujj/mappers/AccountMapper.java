@@ -1,7 +1,5 @@
 package by.sakujj.mappers;
 
-import by.sakujj.connection.ConnectionPool;
-import by.sakujj.connection.ConnectionPoolImpl;
 import by.sakujj.dao.ClientDAO;
 import by.sakujj.dto.AccountRequest;
 import by.sakujj.dto.AccountResponse;
@@ -10,6 +8,8 @@ import by.sakujj.model.Account;
 import by.sakujj.model.Client;
 import by.sakujj.model.Currency;
 import by.sakujj.util.AccountIdGenerator;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -17,8 +17,9 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 
 @Mapper
+
 public abstract class AccountMapper {
-    private static final ClientDAO clientDAO = ClientDAO.getInstance();
+    private ClientDAO clientDAO = ClientDAO.getInstance();
     private static final AccountMapper INSTANCE = Mappers.getMapper(AccountMapper.class);
 
     public static AccountMapper getInstance() {
