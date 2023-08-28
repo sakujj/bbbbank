@@ -32,20 +32,25 @@ public class ClientDAO implements DAO<Client, Long> {
             "password"
     );
 
-    private static final String FIND_BY_ID = SQLQueries.getSelectById(
+    private static final String FIND_BY_ID = SQLQueries.getSelectByAttribute(
             TABLE_NAME,
             ID_COLUMN_NAME
     );
 
+    private static final String FIND_BY_EMAIL = SQLQueries.getSelectByAttribute(
+            TABLE_NAME,
+            "email"
+    );
+
     private static final String FIND_ALL = SQLQueries.getSelectAll(TABLE_NAME);
 
-    private static final String UPDATE_BY_ID = SQLQueries.getUpdateById(
+    private static final String UPDATE_BY_ID = SQLQueries.getUpdateByAttribute(
             TABLE_NAME,
             ID_COLUMN_NAME,
             ATTRIBUTES_WITHOUT_ID
     );
 
-    private static final String DELETE_BY_ID = SQLQueries.getDeleteById(
+    private static final String DELETE_BY_ID = SQLQueries.getDeleteByAttribute(
             TABLE_NAME,
             ID_COLUMN_NAME
     );
@@ -57,18 +62,13 @@ public class ClientDAO implements DAO<Client, Long> {
 
     @Override
     public Optional<Client> findById(Long id, Connection connection) throws DAOException {
-        try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ID)) {
-            statement.setObject(1, id);
-            ResultSet resultSet = statement.executeQuery();
+        return ClientDAO.findByAttr(FIND_BY_ID, id, connection);
+    }
 
-            if (resultSet.next()) {
-                return Optional.of(newClient(resultSet));
-            }
-            return Optional.empty();
 
-        } catch (SQLException e) {
-            throw new DAOException(e);
-        }
+
+    public Optional<Client> findByEmail(String email, Connection connection) throws DAOException {
+        return ClientDAO.findByAttr(FIND_BY_EMAIL, email, connection);
     }
 
     @Override
@@ -146,5 +146,22 @@ public class ClientDAO implements DAO<Client, Long> {
                 .email(email)
                 .password(password)
                 .build();
+    }
+
+    private static <T> Optional<Client> findByAttr(String queryToFindBy,
+                                                   T attr,
+                                                   Connection connection) throws DAOException {
+        try(PreparedStatement statement = connection.prepareStatement(queryToFindBy)) {
+            statement.setObject(1, attr);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return Optional.of(newClient(resultSet));
+            }
+            return Optional.empty();
+
+        } catch (SQLException e) {
+            throw new DAOException(e);
+        }
     }
 }

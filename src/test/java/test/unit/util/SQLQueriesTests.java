@@ -1,4 +1,4 @@
-package test.unit;
+package test.unit.util;
 
 import by.sakujj.util.SQLQueries;
 
@@ -42,19 +42,19 @@ public class SQLQueriesTests {
 
     @ParameterizedTest
     @MethodSource
-    void getUpdateById(String tableName,
-                                   String idAttributeName,
+    void getUpdateByAttribute(String tableName,
+                                   String attributeName,
                                    List<String> attributesToUpdate,
                                    String expected) {
-        String actual = SQLQueries.getUpdateById(
+        String actual = SQLQueries.getUpdateByAttribute(
                 tableName,
-                idAttributeName,
+                attributeName,
                 attributesToUpdate);
 
         assertThat(actual).isEqualTo(expected);
     }
 
-    static Stream<Arguments> getUpdateById() {
+    static Stream<Arguments> getUpdateByAttribute() {
         return Stream.of(
                 arguments(
                         "TABLE_X",

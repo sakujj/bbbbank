@@ -35,20 +35,20 @@ public class MonetaryTransactionDAO implements DAO<MonetaryTransaction, Long>  {
             "type"
     );
 
-    private static final String FIND_BY_ID = SQLQueries.getSelectById(
+    private static final String FIND_BY_ID = SQLQueries.getSelectByAttribute(
             TABLE_NAME,
             ID_COLUMN_NAME
     );
 
     private static final String FIND_ALL = SQLQueries.getSelectAll(TABLE_NAME);
 
-    private static final String UPDATE_BY_ID = SQLQueries.getUpdateById(
+    private static final String UPDATE_BY_ID = SQLQueries.getUpdateByAttribute(
             TABLE_NAME,
             ID_COLUMN_NAME,
             ATTRIBUTES_WITHOUT_ID
     );
 
-    private static final String DELETE_BY_ID = SQLQueries.getDeleteById(
+    private static final String DELETE_BY_ID = SQLQueries.getDeleteByAttribute(
             TABLE_NAME,
             ID_COLUMN_NAME
     );

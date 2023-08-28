@@ -104,6 +104,33 @@ public class ClientDAOTests extends AbstractConnectionRelatedTests {
     }
 
     @Nested
+    @DisplayName("findByEmail (String, Connection)")
+    class findByEmail {
+
+        @ParameterizedTest
+        @MethodSource
+        void shouldReturnCorrectClient(Client expected) throws DAOException {
+            Optional<Client> actual = clientDAO.findByEmail(expected.getEmail(), getConnection());
+
+            assertThat(actual).isPresent();
+            assertThat(actual.get()).isEqualTo(expected);
+        }
+
+        static Stream<Client> shouldReturnCorrectClient() {
+            return findAll.shouldContainAllSpecified().flatMap(List::stream);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"emmmm@gdsg.ru"})
+        void shouldReturnOptionalEmpty(String email) throws DAOException {
+            Optional<Client> actual = clientDAO.findByEmail(email, getConnection());
+
+            assertThat(actual).isEmpty();
+        }
+
+    }
+
+    @Nested
     @DisplayName("save (Client)")
     class save {
 

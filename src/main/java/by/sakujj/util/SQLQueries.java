@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class SQLQueries {
-    public static String getSelectById(String tableName, String idAttributeName) {
+    public static String getSelectByAttribute(String tableName, String attributeName) {
         return """
                 SELECT *
                     FROM %s
                 WHERE %s = ?;
-                """.formatted(tableName, idAttributeName);
+                """.formatted(tableName, attributeName);
     }
 
     public static String getSelectAll(String tableName) {
@@ -22,8 +22,8 @@ public class SQLQueries {
                 """.formatted(tableName);
     }
 
-    public static String getUpdateById(String tableName, String idAttributeName,
-                                       List<String> attributesToUpdate) {
+    public static String getUpdateByAttribute(String tableName, String attributeName,
+                                              List<String> attributesToUpdate) {
         return """
                 UPDATE %s
                 \tSET
@@ -35,15 +35,15 @@ public class SQLQueries {
                         .stream()
                         .map("\t%s = ?"::formatted)
                         .collect(Collectors.joining(",\n")),
-                idAttributeName);
+                attributeName);
 
     }
 
-    public static String getDeleteById(String tableName, String idAttributeName) {
+    public static String getDeleteByAttribute(String tableName, String attributeName) {
         return """
                 DELETE FROM %s
                 WHERE %s = ?;
-                """.formatted(tableName, idAttributeName);
+                """.formatted(tableName, attributeName);
     }
 
     public static String getInsert(String tableName, List<String> attributes) {
