@@ -1,23 +1,63 @@
 package by.sakujj.mappers;
 
+import by.sakujj.dao.AccountDAO;
+import by.sakujj.dao.BankDAO;
 import by.sakujj.dto.MonetaryTransactionRequest;
 import by.sakujj.dto.MonetaryTransactionResponse;
-import by.sakujj.model.MonetaryTransaction;
-import by.sakujj.model.MonetaryTransactionType;
+import by.sakujj.exceptions.DAOException;
+import by.sakujj.model.*;
+import lombok.Setter;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Mapper
+@Setter
 public abstract class MonetaryTransactionMapper {
-    private static final MonetaryTransactionMapper INSTANCE = Mappers.getMapper(MonetaryTransactionMapper.class);
-    
-    public static MonetaryTransactionMapper getInstance() {
-        return INSTANCE;
-    }
+
+    private BankDAO bankDAO;
+    private AccountDAO accountDAO;
 
     public abstract MonetaryTransaction fromRequest(MonetaryTransactionRequest request);
-    public abstract MonetaryTransactionResponse toResponse(MonetaryTransaction monetaryTransaction);
+
+    public MonetaryTransactionResponse toResponse(MonetaryTransaction monetaryTransaction, Connection connection) throws DAOException {
+        String senderAccountId = monetaryTransaction.getSenderAccountId();
+        String receiverAccountId = monetaryTransaction.getReceiverAccountId();
+        Optional<Account> possibleSenderAccount = accountDAO.findById(senderAccountId, connection);
+        Optional<Account> possibleReceiverAccount = accountDAO.findById(receiverAccountId, connection);
+        String senderBankName = null;
+        String receiverBankName = null;
+        Currency currency = null;
+        if (possibleSenderAccount.isPresent()) {
+            Account senderAccount = possibleSenderAccount.get();
+            senderBankName = bankDAO.findById(senderAccount.getBankId(), connection)
+                    .get().getName();
+            currency = senderAccount.getCurrency();
+        }
+
+        if (possibleReceiverAccount.isPresent()) {
+            Account receiverAccount = possibleReceiverAccount.get();
+            receiverBankName = bankDAO.findById(receiverAccount.getBankId(), connection)
+                    .get().getName();
+            currency = receiverAccount.getCurrency();
+        }
+
+        MonetaryTransactionResponse response = MonetaryTransactionResponse.builder()
+                .id(monetaryTransaction.getId())
+                .bankSenderName(senderBankName)
+                .bankReceiverName(receiverBankName)
+                .moneyAmount(monetaryTransaction.getMoneyAmount())
+                .currency(currency)
+                .type(monetaryTransaction.getType())
+                .timeWhenCommitted(monetaryTransaction.getTimeWhenCommitted())
+                .senderAccountId(senderAccountId)
+                .receiverAccountId(receiverAccountId)
+                .build();
+
+        return response;
+    }
 }

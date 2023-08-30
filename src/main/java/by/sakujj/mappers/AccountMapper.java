@@ -1,5 +1,6 @@
 package by.sakujj.mappers;
 
+import by.sakujj.dao.AccountDAO;
 import by.sakujj.dao.ClientDAO;
 import by.sakujj.dto.AccountRequest;
 import by.sakujj.dto.AccountResponse;
@@ -15,16 +16,13 @@ import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.time.LocalDate;
 
 @Mapper
-
+@Setter
 public abstract class AccountMapper {
-    private ClientDAO clientDAO = ClientDAO.getInstance();
-    private static final AccountMapper INSTANCE = Mappers.getMapper(AccountMapper.class);
-
-    public static AccountMapper getInstance() {
-        return INSTANCE;
-    }
+    private ClientDAO clientDAO;
+    private AccountDAO accountDAO;
 
     public Account fromRequest(AccountRequest accountRequest, Connection connection) throws DAOException {
         Client client = clientDAO.findByEmail(accountRequest.getClientEmail(), connection).get();
@@ -32,11 +30,12 @@ public abstract class AccountMapper {
         Currency currency = Currency.valueOf(accountRequest.getCurrency());
         Long bankId = Long.valueOf(accountRequest.getBankId());
         BigDecimal moneyAmount = new BigDecimal("0.00");
+        int clientAccountNumber = accountDAO.findByClientId(clientId, connection).size();
 
         return Account.builder()
                 .id(AccountIdGenerator
-                        .generateAccountId(bankId, clientId))
-                .dateWhenOpened(null)
+                        .generateAccountId(clientAccountNumber, bankId, clientId))
+                .dateWhenOpened(LocalDate.now())
                 .moneyAmount(moneyAmount)
                 .bankId(bankId)
                 .clientId(clientId)
@@ -44,14 +43,15 @@ public abstract class AccountMapper {
                 .build();
     }
 
+
     public AccountResponse toResponse(Account account, Connection connection) throws DAOException {
         Client client = clientDAO.findById(account.getClientId(), connection).get();
         String clientEmail = client
                 .getEmail();
-        String currency = account.getCurrency().toString();
-        String bankId = account.getBankId().toString();
-        String moneyAmount = account.getMoneyAmount().toString();
-        String dateWhenOpened = account.getDateWhenOpened().toString();
+        Currency currency = account.getCurrency();
+        Long bankId = account.getBankId();
+        BigDecimal moneyAmount = account.getMoneyAmount();
+        LocalDate dateWhenOpened = account.getDateWhenOpened();
         String id = account.getId();
 
         return AccountResponse.builder()

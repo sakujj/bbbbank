@@ -5,17 +5,14 @@ import by.sakujj.dto.ClientResponse;
 import by.sakujj.hashing.BCryptHasher;
 import by.sakujj.hashing.Hasher;
 import by.sakujj.model.Client;
+import lombok.Setter;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+@Setter
 @Mapper
 public abstract class ClientMapper {
-    private static final Hasher hasher = BCryptHasher.getInstance();
-    private static final ClientMapper INSTANCE = Mappers.getMapper(ClientMapper.class);
-
-    public static ClientMapper getInstance() {
-        return INSTANCE;
-    }
+    private Hasher hasher;
 
     public Client fromRequest(ClientRequest clientRequest) {
         String email = clientRequest.getEmail();
