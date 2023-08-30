@@ -2,6 +2,7 @@ package test.integration.connection;
 
 import by.sakujj.connection.ConnectionPool;
 import by.sakujj.connection.ConnectionPoolImpl;
+import by.sakujj.context.ApplicationContext;
 import lombok.Getter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,8 +13,10 @@ import java.sql.SQLException;
 
 @Getter
 public class AbstractConnectionRelatedTests {
+    private static final ApplicationContext context = ApplicationContext.getTestInstance();
+
     private static final ConnectionPool connectionPool
-            = ConnectionPoolImpl.getTestInstance();
+            = context.getByClass(ConnectionPool.class);
 
     private boolean doRollback = false;
     private Connection connection = null;
