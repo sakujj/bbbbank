@@ -14,7 +14,10 @@ java {
 }
 
 application {
-    mainClass = 'by.sakujj.ApplicationRunner'
+    mainClass = 'by.sakujj.application.ApplicationRunner'
+    run {
+        standardInput = System.in
+    }
 }
 
 repositories {
@@ -27,6 +30,8 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.0.1'
     implementation 'ch.qos.logback:logback-classic:1.4.11'
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    implementation 'org.apache.pdfbox:pdfbox:3.0.0'
+
 
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 

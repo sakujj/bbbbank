@@ -22,29 +22,13 @@ public class ConnectionPoolImpl implements ConnectionPool{
     public static final String TEST_PROPERTIES = "test.properties";
     public static final String PROD_PROPERTIES = "application.properties";
 
-    private ConnectionPoolImpl(String propertiesFileName){
+    public ConnectionPoolImpl(String propertiesFileName){
         this.propertiesFileName = propertiesFileName;
         Properties properties = PropertiesUtil.newProperties(propertiesFileName);
         dataSource = newHikariDataSource(properties);
     }
 
     private final String propertiesFileName;
-
-    public static ConnectionPoolImpl getProductionInstance() {
-        if (productionInstance == null) {
-            productionInstance = new ConnectionPoolImpl(PROD_PROPERTIES);
-        }
-
-        return productionInstance;
-    }
-
-    public static ConnectionPoolImpl getTestInstance() {
-        if (testInstance == null) {
-            testInstance = new ConnectionPoolImpl(TEST_PROPERTIES);
-        }
-
-        return testInstance;
-    }
 
     @SneakyThrows
     private static HikariDataSource newHikariDataSource(Properties properties) {
