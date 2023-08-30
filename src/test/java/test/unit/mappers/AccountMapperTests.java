@@ -1,5 +1,7 @@
 package test.unit.mappers;
 
+import by.sakujj.context.ApplicationContext;
+import by.sakujj.dao.AccountDAO;
 import by.sakujj.dao.ClientDAO;
 import by.sakujj.dto.AccountRequest;
 import by.sakujj.dto.AccountResponse;
@@ -16,6 +18,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -24,6 +28,8 @@ import org.mockito.MockitoAnnotations;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -31,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class AccountMapperTests {
+    private static final ApplicationContext context = ApplicationContext.getTestInstance();
 
     private AutoCloseable mockitoClosable;
 
@@ -38,10 +45,13 @@ public class AccountMapperTests {
     private ClientDAO clientDAO;
 
     @Mock
+    private AccountDAO accountDAO;
+
+    @Mock
     private Connection connection;
 
     @InjectMocks
-    private AccountMapper mapper = AccountMapper.getInstance();
+    private AccountMapper mapper = Mappers.getMapper(AccountMapper.class);
 
     @BeforeEach
     void mockitoSetup() {
@@ -50,21 +60,29 @@ public class AccountMapperTests {
 
     @AfterEach
     void mockitoCleanup() throws Exception {
-          mockitoClosable.close();
+        mockitoClosable.close();
     }
 
     @Execution(ExecutionMode.SAME_THREAD)
     @ParameterizedTest
     @MethodSource
-    void toAccount(AccountRequest request, Account expected) throws DAOException, NoSuchFieldException {
+    void toAccount(AccountRequest request, Account expected) throws DAOException {
         Long expectedId = expected.getClientId();
         Mockito.when(clientDAO.findByEmail(Mockito.any(), Mockito.any())).thenReturn(
                 Optional.of(Client.builder()
                         .id(expectedId)
                         .build()));
 
-        Account actual = mapper.fromRequest(request, connection);
+        List<Account> expectedList = List.of(
+                Account.builder().build(),
+                Account.builder().build());
+        Mockito.when(accountDAO.findByClientId(Mockito.any(), Mockito.any())).thenReturn(
+                expectedList
+        );
 
+        Account actual = mapper.fromRequest(request, connection);
+        assertThat(actual.getDateWhenOpened()).isAfterOrEqualTo(expected.getDateWhenOpened());
+        expected.setDateWhenOpened(actual.getDateWhenOpened());
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -81,8 +99,8 @@ public class AccountMapperTests {
                         .build(),
                 Account.builder()
                         .id(AccountIdGenerator
-                                .generateAccountId(bankId, clientId))
-                        .dateWhenOpened(null)
+                                .generateAccountId(2, bankId, clientId))
+                        .dateWhenOpened(LocalDate.now())
                         .clientId(clientId)
                         .moneyAmount(new BigDecimal("0.00"))
                         .bankId(bankId)
@@ -125,11 +143,11 @@ public class AccountMapperTests {
                         .build(),
                 AccountResponse.builder()
                         .id(id)
-                        .dateWhenOpened(dateWhenOpened.toString())
-                        .moneyAmount(moneyAmount.toString())
-                        .bankId(bankId.toString())
+                        .dateWhenOpened(dateWhenOpened)
+                        .moneyAmount(moneyAmount)
+                        .bankId(bankId)
                         .clientEmail(clientEmail)
-                        .currency(currency.toString())
+                        .currency(currency)
                         .build()
         ));
     }

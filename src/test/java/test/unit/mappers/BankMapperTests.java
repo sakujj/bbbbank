@@ -1,5 +1,6 @@
 package test.unit.mappers;
 
+import by.sakujj.context.ApplicationContext;
 import by.sakujj.dto.BankRequest;
 import by.sakujj.dto.BankResponse;
 import by.sakujj.mappers.BankMapper;
@@ -15,7 +16,9 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class BankMapperTests {
-    private static final BankMapper bankMapper = BankMapper.getInstance();
+    private static final ApplicationContext context = ApplicationContext.getTestInstance();
+
+    private static final BankMapper bankMapper = context.getByClass(BankMapper.class);
 
     @ParameterizedTest
     @MethodSource
@@ -71,7 +74,7 @@ public class BankMapperTests {
                                 .build(),
                         BankResponse.builder()
                                 .name(name1)
-                                .id(id1.toString())
+                                .id(id1)
                                 .build()
                 ),
                 arguments(
@@ -81,7 +84,7 @@ public class BankMapperTests {
                                 .build(),
                         BankResponse.builder()
                                 .name(name2)
-                                .id(id2.toString())
+                                .id(id2)
                                 .build()
                 )
         );

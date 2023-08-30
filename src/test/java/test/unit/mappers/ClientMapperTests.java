@@ -1,5 +1,6 @@
 package test.unit.mappers;
 
+import by.sakujj.context.ApplicationContext;
 import by.sakujj.dto.ClientRequest;
 import by.sakujj.dto.ClientResponse;
 import by.sakujj.hashing.BCryptHasher;
@@ -17,8 +18,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class ClientMapperTests {
-    private static final ClientMapper clientMapper = ClientMapper.getInstance();
-    private static final Hasher hasher = BCryptHasher.getInstance();
+    private static final ApplicationContext context = ApplicationContext.getTestInstance();
+
+    private static final ClientMapper clientMapper = context.getByClass(ClientMapper.class);
+    private static final Hasher hasher = context.getByClass(Hasher.class);
 
     @ParameterizedTest
     @MethodSource
@@ -83,7 +86,7 @@ public class ClientMapperTests {
                     ClientResponse.builder()
                             .username(name)
                             .email(email)
-                            .id(id.toString())
+                            .id(id)
                             .build()
                 )
         );
