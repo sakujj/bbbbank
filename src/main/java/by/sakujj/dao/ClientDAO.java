@@ -5,6 +5,7 @@ import by.sakujj.model.Client;
 import by.sakujj.util.SQLQueries;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,15 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ClientDAO implements DAO<Client, Long> {
-
-    private static final ClientDAO INSTANCE = new ClientDAO();
-
-    public static ClientDAO getInstance() {
-        return INSTANCE;
-    }
 
     private static final String TABLE_NAME = "Client";
     private static final String ID_COLUMN_NAME = "client_id";
@@ -62,13 +57,13 @@ public class ClientDAO implements DAO<Client, Long> {
 
     @Override
     public Optional<Client> findById(Long id, Connection connection) throws DAOException {
-        return ClientDAO.findByAttr(FIND_BY_ID, id, connection);
+        return ClientDAO.findByAttr(FIND_BY_ID, id, connection).stream().findAny();
     }
 
 
 
     public Optional<Client> findByEmail(String email, Connection connection) throws DAOException {
-        return ClientDAO.findByAttr(FIND_BY_EMAIL, email, connection);
+        return ClientDAO.findByAttr(FIND_BY_EMAIL, email, connection).stream().findAny();
     }
 
     @Override
@@ -148,17 +143,18 @@ public class ClientDAO implements DAO<Client, Long> {
                 .build();
     }
 
-    private static <T> Optional<Client> findByAttr(String queryToFindBy,
+    private static <T> List<Client> findByAttr(String queryToFindBy,
                                                    T attr,
                                                    Connection connection) throws DAOException {
         try(PreparedStatement statement = connection.prepareStatement(queryToFindBy)) {
             statement.setObject(1, attr);
             ResultSet resultSet = statement.executeQuery();
 
-            if (resultSet.next()) {
-                return Optional.of(newClient(resultSet));
+            List<Client> clients = new ArrayList<>();
+            while (resultSet.next()) {
+                clients.add(newClient(resultSet));
             }
-            return Optional.empty();
+            return clients;
 
         } catch (SQLException e) {
             throw new DAOException(e);

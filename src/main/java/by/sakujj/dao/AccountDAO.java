@@ -2,10 +2,13 @@ package by.sakujj.dao;
 
 import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.Account;
+import by.sakujj.model.Client;
 import by.sakujj.model.Currency;
 import by.sakujj.util.SQLQueries;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
@@ -18,15 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AccountDAO implements DAO<Account, String> {
-
-    private static final AccountDAO INSTANCE = new AccountDAO();
-
-    public static AccountDAO getInstance() {
-        return INSTANCE;
-    }
 
     private static final String TABLE_NAME = "Account";
     private static final String ID_COLUMN_NAME = "account_id";
@@ -52,6 +49,11 @@ public class AccountDAO implements DAO<Account, String> {
             ID_COLUMN_NAME
     );
 
+    private static final String FIND_BY_CLIENT_ID = SQLQueries.getSelectByAttribute(
+            TABLE_NAME,
+            "client_id"
+    );
+
     private static final String FIND_ALL = SQLQueries.getSelectAll(TABLE_NAME);
 
     private static final String UPDATE_BY_ID = SQLQueries.getUpdateByAttribute(
@@ -59,6 +61,12 @@ public class AccountDAO implements DAO<Account, String> {
             ID_COLUMN_NAME,
             ATTRIBUTES_WITHOUT_ID
     );
+
+    private static final String UPDATE_MONEY_AMOUNT_BY_ID = """
+            UPDATE Account
+                SET money_amount = money_amount + ?
+            WHERE account_id = ?
+            """;
 
     private static final String DELETE_BY_ID = SQLQueries.getDeleteByAttribute(
             TABLE_NAME,
@@ -70,17 +78,39 @@ public class AccountDAO implements DAO<Account, String> {
             ATTRIBUTES_WITH_ID
     );
 
+
+    public boolean updateMoneyAmountById(BigDecimal moneyAmount, String id, Connection connection) throws DAOException {
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_MONEY_AMOUNT_BY_ID)) {
+            statement.setObject(1, moneyAmount);
+            statement.setObject(2, id);
+
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DAOException(e);
+        }
+    }
+
     @Override
     public Optional<Account> findById(String id, Connection connection) throws DAOException {
-        try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ID)) {
-            statement.setObject(1, id);
+        return findByAttr(FIND_BY_ID, id, connection).stream().findAny();
+    }
 
+    public List<Account> findByClientId(Long clientId, Connection connection) throws DAOException {
+        return findByAttr(FIND_BY_CLIENT_ID, clientId, connection);
+    }
+
+    private static <T> List<Account> findByAttr(String queryToFindBy,
+                                                T attr,
+                                                Connection connection) throws DAOException {
+        try (PreparedStatement statement = connection.prepareStatement(queryToFindBy)) {
+            statement.setObject(1, attr);
             ResultSet resultSet = statement.executeQuery();
 
-            if (resultSet.next()) {
-                return Optional.of(newAccount(resultSet));
+            List<Account> accounts = new ArrayList<>();
+            while (resultSet.next()) {
+                accounts.add(newAccount(resultSet));
             }
-            return Optional.empty();
+            return accounts;
 
         } catch (SQLException e) {
             throw new DAOException(e);

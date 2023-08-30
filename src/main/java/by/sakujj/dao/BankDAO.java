@@ -5,6 +5,7 @@ import by.sakujj.model.Bank;
 import by.sakujj.util.SQLQueries;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.*;
@@ -12,15 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BankDAO implements DAO<Bank, Long> {
-
-    private static final BankDAO INSTANCE = new BankDAO();
-
-    public static BankDAO getInstance() {
-        return INSTANCE;
-    }
 
     private static final String TABLE_NAME = "Bank";
     private static final String ID_COLUMN_NAME = "bank_id";

@@ -6,6 +6,7 @@ import by.sakujj.model.MonetaryTransactionType;
 import by.sakujj.util.SQLQueries;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
@@ -15,15 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MonetaryTransactionDAO implements DAO<MonetaryTransaction, Long>  {
-
-    private static final MonetaryTransactionDAO INSTANCE = new MonetaryTransactionDAO();
-
-    public static MonetaryTransactionDAO getInstance() {
-        return INSTANCE;
-    }
 
     private static final String TABLE_NAME = "MonetaryTransaction";
     private static final String ID_COLUMN_NAME = "monetary_transaction_id";
