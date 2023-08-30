@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ClientResponse {
-    private String id;
+    private Long id;
     private String username;
     private String email;
 }
