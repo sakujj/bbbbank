@@ -7,28 +7,36 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class AccountIdGeneratorTests {
 
     @ParameterizedTest
     @MethodSource
-    void generateAccountId(Long bankId, Long clientId, String expectedId) {
-        String accountId = AccountIdGenerator.generateAccountId(bankId, clientId);
+    void generateAccountId(int accountNumber, Long bankId, Long clientId, String expectedId) {
+        String accountId = AccountIdGenerator.generateAccountId(accountNumber, bankId, clientId);
+
+        assertThat(accountId.length()).isEqualTo(28);
+        assertThat(accountId).isEqualTo(expectedId);
     }
 
     static Stream<Arguments> generateAccountId() {
+        int accountNumber = 30;
         Long clientId = 1234L;
         Long bankId = 12345678901L;
-        String filler = "X".repeat(17).substring(0, 17 - clientId.toString().length());
 
-        long clientId2 = Long.MAX_VALUE % (10L * 17L);
+        long clientId2 = 372_036_854_775_807L;
         return Stream.of(arguments(
+                accountNumber,
                         bankId, clientId,
-                        bankId + filler + clientId
+                        "1234567890130XXXXXXXXXXX1234"
                 ),
-                arguments(bankId, clientId,
-                        bankId.toString() + clientId2
+                arguments(
+                        2,
+                        bankId, clientId2,
+                        "%d%s%d".formatted(bankId, "02", clientId2)
                 )
         );
     }
