@@ -1,5 +1,6 @@
 package test.integration.dao;
 
+import by.sakujj.context.ApplicationContext;
 import by.sakujj.dao.MonetaryTransactionDAO;
 import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.MonetaryTransaction;
@@ -24,7 +25,9 @@ import static org.assertj.core.api.Assertions.*;
 
 @Slf4j
 public class MonetaryTransactionDAOTests extends AbstractConnectionRelatedTests {
-    MonetaryTransactionDAO monetaryTransactionDAO = MonetaryTransactionDAO.getInstance();
+    private static final ApplicationContext context = ApplicationContext.getTestInstance();
+
+    MonetaryTransactionDAO monetaryTransactionDAO = context.getByClass(MonetaryTransactionDAO.class);
 
     @Nested
     @DisplayName("findAll (Connection)")

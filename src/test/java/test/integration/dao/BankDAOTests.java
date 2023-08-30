@@ -1,5 +1,6 @@
 package test.integration.dao;
 
+import by.sakujj.context.ApplicationContext;
 import by.sakujj.dao.BankDAO;
 import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.Bank;
@@ -28,7 +29,9 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
 public class BankDAOTests extends AbstractConnectionRelatedTests {
-    private static final BankDAO bankDAO = BankDAO.getInstance();
+    private static final ApplicationContext context = ApplicationContext.getTestInstance();
+
+    private static final BankDAO bankDAO = context.getByClass(BankDAO.class);
 
     @Nested
     @DisplayName("findById (Long, Connection)")

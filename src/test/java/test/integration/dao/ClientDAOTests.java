@@ -1,5 +1,6 @@
 package test.integration.dao;
 
+import by.sakujj.context.ApplicationContext;
 import by.sakujj.dao.ClientDAO;
 import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.Bank;
@@ -26,8 +27,9 @@ import java.util.stream.Stream;
 
 @Slf4j
 public class ClientDAOTests extends AbstractConnectionRelatedTests {
+    private static final ApplicationContext context = ApplicationContext.getTestInstance();
 
-    private static final ClientDAO clientDAO = ClientDAO.getInstance();
+    private static final ClientDAO clientDAO = context.getByClass(ClientDAO.class);
 
     @Nested
     @DisplayName("findAll (Connection)")
