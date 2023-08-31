@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -16,12 +17,12 @@ import java.time.LocalDateTime;
 public class MonetaryTransactionResponse {
     private Long id;
     private LocalDateTime timeWhenCommitted;
-    private String senderAccountId;
-    private String receiverAccountId;
+    private Optional<String> senderAccountId;
+    private Optional<String> receiverAccountId;
     private BigDecimal moneyAmount;
     private MonetaryTransactionType type;
-    private String bankSenderName;
-    private String bankReceiverName;
+    private Optional<String> bankSenderName;
+    private Optional<String> bankReceiverName;
     private Currency currency;
 }
 

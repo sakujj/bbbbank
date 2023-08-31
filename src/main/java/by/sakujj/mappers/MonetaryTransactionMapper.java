@@ -22,6 +22,10 @@ public abstract class MonetaryTransactionMapper {
     private BankDAO bankDAO;
     private AccountDAO accountDAO;
 
+    String map(Optional<String> value) {
+        return value.orElse(null);
+    }
+
     public abstract MonetaryTransaction fromRequest(MonetaryTransactionRequest request);
 
     public MonetaryTransactionResponse toResponse(MonetaryTransaction monetaryTransaction, Connection connection) throws DAOException {
@@ -46,18 +50,16 @@ public abstract class MonetaryTransactionMapper {
             currency = receiverAccount.getCurrency();
         }
 
-        MonetaryTransactionResponse response = MonetaryTransactionResponse.builder()
+        return MonetaryTransactionResponse.builder()
                 .id(monetaryTransaction.getId())
-                .bankSenderName(senderBankName)
-                .bankReceiverName(receiverBankName)
+                .bankSenderName(Optional.ofNullable(senderBankName))
+                .bankReceiverName(Optional.ofNullable(receiverBankName))
                 .moneyAmount(monetaryTransaction.getMoneyAmount())
                 .currency(currency)
                 .type(monetaryTransaction.getType())
                 .timeWhenCommitted(monetaryTransaction.getTimeWhenCommitted())
-                .senderAccountId(senderAccountId)
-                .receiverAccountId(receiverAccountId)
+                .senderAccountId(Optional.ofNullable(senderAccountId))
+                .receiverAccountId(Optional.ofNullable(receiverAccountId))
                 .build();
-
-        return response;
     }
 }

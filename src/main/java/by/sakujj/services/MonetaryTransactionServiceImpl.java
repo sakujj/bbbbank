@@ -33,7 +33,7 @@ public class MonetaryTransactionServiceImpl implements MonetaryTransactionServic
     public Optional<MonetaryTransactionResponse> createDepositTransaction(MonetaryTransactionRequest request) {
         try (Connection connection = connectionPool.getConnection()) {
             BigDecimal moneyAmount = new BigDecimal(request.getMoneyAmount());
-            String accountId = request.getReceiverAccountId();
+            String accountId = request.getReceiverAccountId().get();
             boolean isUpdated = accountDAO.updateMoneyAmountById(moneyAmount, accountId, connection);
             if (!isUpdated) {
                 return Optional.empty();
@@ -47,7 +47,7 @@ public class MonetaryTransactionServiceImpl implements MonetaryTransactionServic
     public Optional<MonetaryTransactionResponse> createWithdrawalTransaction(MonetaryTransactionRequest request) {
         try (Connection connection = connectionPool.getConnection()) {
             BigDecimal moneyAmount = new BigDecimal(request.getMoneyAmount());
-            String accountId = request.getSenderAccountId();
+            String accountId = request.getSenderAccountId().get();
             boolean isUpdated = accountDAO.updateMoneyAmountById(moneyAmount.negate(), accountId, connection);
             if (!isUpdated) {
                 return Optional.empty();
@@ -83,13 +83,13 @@ public class MonetaryTransactionServiceImpl implements MonetaryTransactionServic
             connection.setAutoCommit(false);
 
             BigDecimal moneyAmount = new BigDecimal(request.getMoneyAmount());
-            String senderId = request.getSenderAccountId();
+            String senderId = request.getSenderAccountId().get();
             boolean isUpdated = accountDAO.updateMoneyAmountById(moneyAmount.negate(), senderId, connection);
             if (!isUpdated) {
                 return Optional.empty();
             }
 
-            String receiverId = request.getReceiverAccountId();
+            String receiverId = request.getReceiverAccountId().get();
             isUpdated = accountDAO.updateMoneyAmountById(moneyAmount, receiverId, connection);
             if (!isUpdated) {
                 return Optional.empty();

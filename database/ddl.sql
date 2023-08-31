@@ -2,7 +2,7 @@ CREATE TABLE
     Bank
 (
     bank_id BIGINT       NOT NULL,
-    name    VARCHAR(255) NOT NULL,
+    name    VARCHAR(30) NOT NULL,
 
     CONSTRAINT bank_pk
         PRIMARY KEY (bank_id),

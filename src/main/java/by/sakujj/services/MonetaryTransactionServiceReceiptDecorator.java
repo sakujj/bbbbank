@@ -30,8 +30,10 @@ public class MonetaryTransactionServiceReceiptDecorator implements MonetaryTrans
     private final MonetaryTransactionService service;
 
     private final ExecutorService pool = Executors.newFixedThreadPool(1);
-
-
+    @Override
+    public void close() {
+        pool.shutdown();
+    }
 
     @Override
     public Optional<MonetaryTransactionResponse> createTransferTransaction(MonetaryTransactionRequest request) {
@@ -80,8 +82,10 @@ public class MonetaryTransactionServiceReceiptDecorator implements MonetaryTrans
     private List<String> parseTransactionToReceipt(MonetaryTransactionResponse response, int lineLength) {
         Long transactionId = response.getId();
         LocalDateTime timeWhenCommitted = response.getTimeWhenCommitted();
-        String senderAccountId = response.getSenderAccountId();
-        String receiverAccountId = response.getReceiverAccountId();
+        Optional<String> senderAccountId = response.getSenderAccountId();
+        Optional<String> receiverAccountId = response.getReceiverAccountId();
+        Optional<String> bankSenderName = response.getBankSenderName();
+        Optional<String> bankReceiverName = response.getBankReceiverName();
         MonetaryTransactionType type = response.getType();
         BigDecimal moneyAmount = response.getMoneyAmount();
 
@@ -115,27 +119,27 @@ public class MonetaryTransactionServiceReceiptDecorator implements MonetaryTrans
         };
         lines.add(createReceiptLine(lineLength, property, value));
 
-        if (response.getBankSenderName() != null) {
+        if (bankSenderName.isPresent()) {
             property = "Банк отправителя:";
-            value = response.getBankSenderName();
+            value = bankSenderName.get();
             lines.add(createReceiptLine(lineLength, property, value));
         }
 
-        if (response.getBankReceiverName() != null) {
+        if (bankReceiverName.isPresent()) {
             property = "Банк получателя:";
-            value = response.getBankReceiverName();
+            value = bankReceiverName.get();
             lines.add(createReceiptLine(lineLength, property, value));
         }
 
-        if (senderAccountId != null) {
+        if (senderAccountId.isPresent()) {
             property = "Счет оптравителя:";
-            value = senderAccountId;
+            value = senderAccountId.get();
             lines.add(createReceiptLine(lineLength, property, value));
         }
 
-        if (receiverAccountId != null) {
+        if (receiverAccountId.isPresent()) {
             property = "Счет получателя:";
-            value = receiverAccountId;
+            value = receiverAccountId.get();
             lines.add(createReceiptLine(lineLength, property, value));
         }
 
@@ -204,8 +208,5 @@ public class MonetaryTransactionServiceReceiptDecorator implements MonetaryTrans
         return "|%s%s%s|".formatted(property, filler, value);
     }
 
-    @Override
-    public void close() throws Exception {
-        pool.shutdown();
-    }
+
 }
