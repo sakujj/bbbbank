@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,6 +23,21 @@ public class BankServiceImpl implements BankService {
     private final BankMapper bankMapper;
     private final BankDAO bankDAO;
 
+    @SneakyThrows
+    public Optional<BankResponse> findById(Long id) {
+        try (Connection connection = connectionPool.getConnection()) {
+            return bankDAO.findById(id, connection)
+                    .map(bankMapper::toResponse);
+        }
+    }
+
+    @SneakyThrows
+    public Optional<BankResponse> findByName(String name) {
+        try (Connection connection = connectionPool.getConnection()) {
+            return bankDAO.findByName(name, connection)
+                    .map(bankMapper::toResponse);
+        }
+    }
     @SneakyThrows
     public List<BankResponse> findAll(){
         try(Connection connection = connectionPool.getConnection()) {
