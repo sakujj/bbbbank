@@ -35,10 +35,11 @@ public class BankMapperTests {
                 arguments(
                         BankRequest.builder()
                                 .name(name1)
+                                .id("1234")
                                 .build(),
                         Bank.builder()
                                 .name(name1)
-                                .id(null)
+                                .id(1234L)
                                 .build()
                 ),
                 arguments(
