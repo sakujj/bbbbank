@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface AccountService {
     boolean updateMoneyAmountById(BigDecimal moneyAmount, String id);
+    boolean updateMoneyAmountByPercentage(BigDecimal percentage, String id);
     Optional<AccountResponse> findById(String id);
     List<AccountResponse> findAll();
     List<AccountResponse> findAllByClientId(Long clientId);

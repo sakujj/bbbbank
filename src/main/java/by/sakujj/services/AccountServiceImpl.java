@@ -28,11 +28,19 @@ public class AccountServiceImpl implements AccountService {
 
     @SneakyThrows
     public boolean updateMoneyAmountById(BigDecimal moneyAmount, String id) {
-        try(Connection connection = connectionPool.getConnection()) {
+        try (Connection connection = connectionPool.getConnection()) {
             accountDAO.updateMoneyAmountById(moneyAmount, id, connection);
             return true;
         } catch (DAOException e) {
             return false;
+        }
+    }
+
+    @SneakyThrows
+    public boolean updateMoneyAmountByPercentage(BigDecimal percentage, String id) {
+        try (Connection connection = connectionPool.getConnection()) {
+            accountDAO.updateMoneyAmountByPercentage(percentage, id, connection);
+            return true;
         }
     }
 
@@ -50,9 +58,10 @@ public class AccountServiceImpl implements AccountService {
             });
         }
     }
+
     @SneakyThrows
-    public List<AccountResponse> findAll(){
-        try(Connection connection = connectionPool.getConnection()) {
+    public List<AccountResponse> findAll() {
+        try (Connection connection = connectionPool.getConnection()) {
             List<AccountResponse> accountResponses = accountDAO.findAll(connection)
                     .stream()
                     .map(a -> {
@@ -68,8 +77,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @SneakyThrows
-    public List<AccountResponse> findAllByClientId(Long clientId){
-        try(Connection connection = connectionPool.getConnection()) {
+    public List<AccountResponse> findAllByClientId(Long clientId) {
+        try (Connection connection = connectionPool.getConnection()) {
             List<AccountResponse> accountResponses = accountDAO.findByClientId(clientId, connection)
                     .stream()
                     .map(a -> {
@@ -86,7 +95,7 @@ public class AccountServiceImpl implements AccountService {
 
     @SneakyThrows
     public String save(AccountRequest request) {
-        try(Connection connection = connectionPool.getConnection()) {
+        try (Connection connection = connectionPool.getConnection()) {
             Account account = accountMapper.fromRequest(request, connection);
 
             return accountDAO.save(account, connection);
