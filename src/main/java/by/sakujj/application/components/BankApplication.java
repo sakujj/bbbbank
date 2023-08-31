@@ -44,9 +44,9 @@ public class BankApplication {
                         \t'all a' to see all accounts
                         \t'all b' to see all banks
                         \t'q' to quit
-                        \t't' to transfer money to other account
-                        \t'd' to deposit money to specified account
-                        \t'w' to withdrawal money from specified account
+                        \t't' to transfer money
+                        \t'd' to deposit money
+                        \t'w' to withdrawal money
                         """);
 
                 input = reader.readLine();
@@ -127,8 +127,8 @@ public class BankApplication {
         MonetaryTransactionType type = MonetaryTransactionType.TRANSFER;
         MonetaryTransactionRequest request = MonetaryTransactionRequest.builder()
                 .moneyAmount(moneyAmount)
-                .senderAccountId(myAccountId)
-                .receiverAccountId(otherAccountId)
+                .senderAccountId(Optional.of(myAccountId))
+                .receiverAccountId(Optional.of(otherAccountId))
                 .type(type.toString())
                 .build();
         Optional<MonetaryTransactionResponse> possibleResponse
@@ -162,8 +162,8 @@ public class BankApplication {
 
         MonetaryTransactionType type = MonetaryTransactionType.DEPOSIT;
         MonetaryTransactionRequest request = MonetaryTransactionRequest.builder()
-                .senderAccountId(null)
-                .receiverAccountId(accountId)
+                .senderAccountId(Optional.empty())
+                .receiverAccountId(Optional.of(accountId))
                 .type(type.toString())
                 .moneyAmount(moneyAmount)
                 .build();
@@ -206,8 +206,8 @@ public class BankApplication {
 
         MonetaryTransactionType type = MonetaryTransactionType.WITHDRAWAL;
         MonetaryTransactionRequest request = MonetaryTransactionRequest.builder()
-                .senderAccountId(accountId)
-                .receiverAccountId(null)
+                .senderAccountId(Optional.of(accountId))
+                .receiverAccountId(Optional.empty())
                 .type(type.toString())
                 .moneyAmount(moneyAmount)
                 .build();

@@ -77,8 +77,8 @@ public class MonetaryTransactionMapperTests {
         return Stream.of(
                 arguments(
                         MonetaryTransactionRequest.builder()
-                                .senderAccountId(senderAccountId)
-                                .receiverAccountId(receiverAccountId)
+                                .senderAccountId(Optional.of(senderAccountId))
+                                .receiverAccountId(Optional.of(receiverAccountId))
                                 .moneyAmount(moneyAmount.toString())
                                 .type(type.toString())
                                 .build(),
@@ -157,11 +157,11 @@ public class MonetaryTransactionMapperTests {
                 MonetaryTransactionResponse.builder()
                         .id(id)
                         .timeWhenCommitted(timeWhenCommitted)
-                        .senderAccountId(senderAccountId)
-                        .receiverAccountId(receiverAccountId)
+                        .senderAccountId(Optional.of(senderAccountId))
+                        .receiverAccountId(Optional.of(receiverAccountId))
                         .moneyAmount(moneyAmount)
-                        .bankReceiverName("RECEIVER BANK")
-                        .bankSenderName("SENDER BANK")
+                        .bankReceiverName(Optional.of("RECEIVER BANK"))
+                        .bankSenderName(Optional.of("SENDER BANK"))
                         .currency(Currency.USD)
                         .type(type)
                         .build()
