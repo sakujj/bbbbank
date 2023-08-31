@@ -28,6 +28,11 @@ public class BankDAO implements DAO<Bank, Long> {
             ID_COLUMN_NAME
     );
 
+    private static final String FIND_BY_NAME = SQLQueries.getSelectByAttribute(
+            TABLE_NAME,
+            "name"
+    );
+
     private static final String FIND_ALL = SQLQueries.getSelectAll(TABLE_NAME);
 
     private static final String UPDATE_BY_ID = SQLQueries.getUpdateByAttribute(
@@ -48,18 +53,29 @@ public class BankDAO implements DAO<Bank, Long> {
 
     @Override
     public Optional<Bank> findById(Long id, Connection connection) throws DAOException {
-        try (PreparedStatement statement = connection.prepareStatement(FIND_BY_ID)) {
+        return findByAttribute(FIND_BY_ID, id, connection)
+                .stream()
+                .findAny();
+    }
 
-            statement.setObject(1, id);
+    public Optional<Bank> findByName(String name, Connection connection) throws DAOException {
+        return findByAttribute(FIND_BY_NAME, name, connection)
+                .stream()
+                .findAny();
+    }
+
+    public <T> List<Bank> findByAttribute(String sqlQuery, T attr, Connection connection) throws DAOException {
+        try (PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
+
+            statement.setObject(1, attr);
 
             ResultSet resultSet = statement.executeQuery();
 
-            if (resultSet.next()) {
-                return Optional.of(
-                    newBank(resultSet)
-                );
+            List<Bank> banks = new ArrayList<>();
+            while (resultSet.next()) {
+                banks.add(newBank(resultSet));
             }
-            return Optional.empty();
+            return banks;
 
         } catch (SQLException e) {
             throw new DAOException(e);
@@ -68,11 +84,11 @@ public class BankDAO implements DAO<Bank, Long> {
 
     @Override
     public List<Bank> findAll(Connection connection) throws DAOException {
-        try (PreparedStatement statement = connection.prepareStatement(FIND_ALL)){
+        try (PreparedStatement statement = connection.prepareStatement(FIND_ALL)) {
 
             ResultSet resultSet = statement.executeQuery();
 
-            List<Bank> all= new ArrayList<>();
+            List<Bank> all = new ArrayList<>();
             while (resultSet.next()) {
                 all.add(newBank(resultSet));
             }
@@ -85,7 +101,7 @@ public class BankDAO implements DAO<Bank, Long> {
 
     @Override
     public Long save(Bank obj, Connection connection) throws DAOException {
-        try (PreparedStatement statement = connection.prepareStatement(INSERT)){
+        try (PreparedStatement statement = connection.prepareStatement(INSERT)) {
             statement.setObject(1, obj.getId());
             statement.setObject(2, obj.getName());
 

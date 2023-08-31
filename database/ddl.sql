@@ -7,7 +7,9 @@ CREATE TABLE
     CONSTRAINT bank_pk
         PRIMARY KEY (bank_id),
     CONSTRAINT bank_identification_number_length_chk
-        CHECK (length(cast(bank_id AS VARCHAR)) = 11)
+        CHECK (length(cast(bank_id AS VARCHAR)) = 11),
+    CONSTRAINT bank_name_uq
+        UNIQUE (name)
 );
 
 CREATE TABLE
@@ -20,7 +22,7 @@ CREATE TABLE
 
     CONSTRAINT client_pk
         PRIMARY KEY (client_id),
-    CONSTRAINT email_uq
+    CONSTRAINT client_email_uq
         UNIQUE (email)
 );
 
