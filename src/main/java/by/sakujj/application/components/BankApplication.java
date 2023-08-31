@@ -2,15 +2,16 @@ package by.sakujj.application.components;
 
 import by.sakujj.context.ApplicationContext;
 import by.sakujj.dto.*;
+import by.sakujj.exceptions.ValidationException;
 import by.sakujj.model.Currency;
 import by.sakujj.model.MonetaryTransactionType;
 import by.sakujj.services.*;
+import by.sakujj.validators.MonetaryTransactionValidator;
 import lombok.RequiredArgsConstructor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,8 @@ public class BankApplication {
     private final BankService bankService = context.getByClass(BankService.class);
     private final MonetaryTransactionService monetaryTransactionService
             = context.getByClass(MonetaryTransactionService.class);
+    private final MonetaryTransactionValidator monetaryTransactionValidator
+            = context.getByClass(MonetaryTransactionValidator.class);
 
     public void start() {
         try {
@@ -51,7 +54,12 @@ public class BankApplication {
 
                 input = reader.readLine();
                 output = switch (input) {
-                    case "my a" -> getMyAccounts();
+                    case "my a" -> {
+                        String myAccounts = getMyAccounts();
+                        if (myAccounts.isEmpty())
+                            yield "No accounts are present";
+                        yield myAccounts;
+                    }
                     case "new a" -> createNewAccount(reader);
                     case "all a" -> getAllAccounts();
                     case "all b" -> getAllBanks();
@@ -77,6 +85,7 @@ public class BankApplication {
 
         System.out.println("Specify your account ID to TRANSFER from: ");
         String myAccountId = reader.readLine();
+
         List<AccountResponse> myAccounts = accountService.findAllByClientId(authenticatedUser.getId());
         Optional<AccountResponse> possibleMyAccount = myAccounts.stream()
                 .filter(a -> a.getId().equals(myAccountId))
@@ -84,45 +93,16 @@ public class BankApplication {
         if (possibleMyAccount.isEmpty()) {
             return "You can TRANSFER only from your accounts";
         }
+        AccountResponse myAccount = possibleMyAccount.get();
 
         System.out.println("All accounts: ");
         System.out.println(getAllAccounts());
 
         System.out.println("Specify the ID of an account to TRANSFER to: ");
         String otherAccountId = reader.readLine();
-        if (otherAccountId.equals(myAccountId)) {
-            return "You can not TRANSFER to the same account";
-        }
-        Optional<AccountResponse> possibleAccountToTransferTo = accountService.findById(otherAccountId);
-        if (possibleAccountToTransferTo.isEmpty())
-            return "Non existing ID specified";
-
-        var myAccount = possibleMyAccount.get();
-        var accountToTransferTo = possibleAccountToTransferTo.get();
-        if (!myAccount.getCurrency().equals(accountToTransferTo.getCurrency()))
-            return "Can not transfer %s to account with %s".formatted(myAccount.getCurrency(),
-                    accountToTransferTo.getCurrency());
 
         System.out.print("Specify money amount to TRANSFER: ");
         String moneyAmount = reader.readLine();
-        if (new BigDecimal(moneyAmount).compareTo(possibleMyAccount.get().getMoneyAmount()) > 0) {
-            return "Can not TRANSFER specified amount, balance is too low";
-        }
-
-        System.out.println("""
-                Are you sure to TRANSFER %s %s
-                    from your account:
-                        %s
-                    to other account:
-                        %s
-                ?
-                yes/y or no/n""".formatted(moneyAmount, myAccount.getCurrency(),
-                myAccountId,
-                otherAccountId));
-        String answer = reader.readLine();
-
-        if (!answer.equals("yes") && !answer.equals("y"))
-            return "TRANSFER canceled";
 
         MonetaryTransactionType type = MonetaryTransactionType.TRANSFER;
         MonetaryTransactionRequest request = MonetaryTransactionRequest.builder()
@@ -131,6 +111,27 @@ public class BankApplication {
                 .receiverAccountId(Optional.of(otherAccountId))
                 .type(type.toString())
                 .build();
+        try {
+            monetaryTransactionValidator.validate(request);
+        } catch (ValidationException e) {
+            return getFormattedErrors(e);
+        }
+
+        System.out.printf("""
+                Are you sure to TRANSFER %s %s
+                from your account:
+                    %s
+                to other account:
+                    %s ?
+            yes/y or no/n: """.formatted(moneyAmount, myAccount.getCurrency(),
+                myAccountId,
+                otherAccountId));
+        String answer = reader.readLine();
+
+        if (!answer.equals("yes") && !answer.equals("y"))
+            return "TRANSFER canceled";
+
+
         Optional<MonetaryTransactionResponse> possibleResponse
                 = monetaryTransactionService.createTransferTransaction(request);
         return possibleResponse.map(r -> "Successful transaction performed")
@@ -147,19 +148,6 @@ public class BankApplication {
         System.out.print("Specify money amount to DEPOSIT: ");
         String moneyAmount = reader.readLine();
 
-        Optional<AccountResponse> possibleAccountToDeposit = accountService.findById(accountId);
-        if (possibleAccountToDeposit.isEmpty()) {
-            return "Non existing account was specified";
-        }
-        AccountResponse accountToDeposit = possibleAccountToDeposit.get();
-        System.out.printf("Are you sure you want to DEPOSIT %s %s%nto %s account of %s?%nyes/y or no/n: ", moneyAmount, accountToDeposit.getCurrency(),
-                accountId,
-                accountToDeposit.getClientEmail());
-        String answer = reader.readLine();
-
-        if (!answer.equals("yes") && !answer.equals("y"))
-            return "DEPOSIT canceled";
-
         MonetaryTransactionType type = MonetaryTransactionType.DEPOSIT;
         MonetaryTransactionRequest request = MonetaryTransactionRequest.builder()
                 .senderAccountId(Optional.empty())
@@ -167,6 +155,23 @@ public class BankApplication {
                 .type(type.toString())
                 .moneyAmount(moneyAmount)
                 .build();
+        try {
+            monetaryTransactionValidator.validate(request);
+        } catch (ValidationException e) {
+            return getFormattedErrors(e);
+        }
+        AccountResponse accountToDeposit = accountService.findById(accountId).get();
+
+        System.out.printf("""
+                    Are you sure you want to DEPOSIT %s %s
+                    to %s account of %s?
+                yes/y or no/n: """, moneyAmount, accountToDeposit.getCurrency(),
+                accountId,
+                accountToDeposit.getClientEmail());
+        String answer = reader.readLine();
+
+        if (!answer.equals("yes") && !answer.equals("y"))
+            return "DEPOSIT canceled";
 
         Optional<MonetaryTransactionResponse> response = monetaryTransactionService
                 .createDepositTransaction(request);
@@ -184,25 +189,16 @@ public class BankApplication {
 
 
         List<AccountResponse> myAccounts = accountService.findAllByClientId(authenticatedUser.getId());
-        if (myAccounts.stream()
+        Optional<AccountResponse> specifiedAccount = myAccounts.stream()
                 .filter(a -> a.getId().equals(accountId))
-                .findAny()
-                .isEmpty()) {
+                .findAny();
+        if (specifiedAccount.isEmpty()) {
             return "You can WITHDRAW only from your accounts";
         }
 
         System.out.print("Specify money amount to withdraw: ");
         String moneyAmount = reader.readLine();
 
-        AccountResponse accountToDeposit = accountService.findById(accountId).get();
-        System.out.printf("Are you sure you want to WITHDRAW %s %s %nfrom %s account with balance %s?%nyes/y or no/n: ",
-                moneyAmount, accountToDeposit.getCurrency(),
-                accountId,
-                accountToDeposit.getMoneyAmount());
-        String answer = reader.readLine();
-
-        if (!answer.equals("yes") && !answer.equals("y"))
-            return "WITHDRAWAL canceled";
 
         MonetaryTransactionType type = MonetaryTransactionType.WITHDRAWAL;
         MonetaryTransactionRequest request = MonetaryTransactionRequest.builder()
@@ -211,10 +207,28 @@ public class BankApplication {
                 .type(type.toString())
                 .moneyAmount(moneyAmount)
                 .build();
+        try {
+            monetaryTransactionValidator.validate(request);
+        } catch (ValidationException e) {
+            return getFormattedErrors(e);
+        }
+
+        AccountResponse accountToWithdrawFrom = specifiedAccount.get();
+
+        System.out.printf("""
+                            Are you sure you want to WITHDRAW %s %s
+                            from %s account with balance %s?
+                        yes/y or no/n: """,
+                moneyAmount, accountToWithdrawFrom.getCurrency(),
+                accountId,
+                accountToWithdrawFrom.getMoneyAmount());
+        String answer = reader.readLine();
+
+        if (!answer.equals("yes") && !answer.equals("y"))
+            return "WITHDRAWAL canceled";
 
         Optional<MonetaryTransactionResponse> response = monetaryTransactionService
                 .createWithdrawalTransaction(request);
-
         return response.map(r -> "Successful transaction performed")
                 .orElse("Error occurred, transaction canceled");
     }
@@ -239,7 +253,7 @@ public class BankApplication {
         List<AccountResponse> accounts = accountService.findAllByClientId(authenticatedUser.getId());
         return accounts.stream()
                 .map(a -> """
-                        Account ID: %s, Bank ID: %s, Money amount: %s %s, Date when opened: %s"
+                        Account ID: %s, Bank ID: %s, Money amount: %s %s, Date when opened: %s
                         """.formatted(
                         a.getId(),
                         a.getBankId(),
@@ -257,7 +271,7 @@ public class BankApplication {
                                 .formatted(a.getId(),
                                         a.getClientEmail(),
                                         a.getMoneyAmount(), a.getCurrency()))
-                .collect(Collectors.joining("\r\n"));
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 
     public String getAllBanks() {
@@ -267,6 +281,13 @@ public class BankApplication {
                         b -> "ID: %s, BANK NAME: %s"
                                 .formatted(b.getId(),
                                         b.getName()))
-                .collect(Collectors.joining("\r\n"));
+                .collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    private String getFormattedErrors(ValidationException e) {
+        return e.getErrors()
+                .stream()
+                .map(err -> "(!) " + err)
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 }

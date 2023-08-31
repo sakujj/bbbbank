@@ -3,9 +3,12 @@ package by.sakujj.application.components;
 import by.sakujj.context.ApplicationContext;
 import by.sakujj.dto.ClientRequest;
 import by.sakujj.dto.ClientResponse;
+import by.sakujj.exceptions.ValidationException;
 import by.sakujj.services.AuthenticationService;
 import by.sakujj.services.AuthenticationServiceImpl;
 import by.sakujj.services.ClientService;
+import by.sakujj.validators.ClientValidator;
+import by.sakujj.validators.Validator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +21,8 @@ public class AuthenticationApplication {
 
     private static final AuthenticationService authenticationService = context.getByClass(AuthenticationService.class);
     private static final ClientService clientService = context.getByClass(ClientService.class);
+    private static final ClientValidator clientValidator = context.getByClass(ClientValidator.class);
+
 
     public static ClientResponse authenticateOrRegister() {
         try {
@@ -28,8 +33,20 @@ public class AuthenticationApplication {
                 System.out.println("Type 'a' to Authenticate, 'r' to Register, 'q' to Quit");
                 String input = reader.readLine();
                 switch (input) {
-                    case "r" -> client = register(reader);
-                    case "a" -> client = authenticate(reader);
+                    case "r" -> {
+                        try {
+                            client = register(reader);
+                        } catch (ValidationException ex) {
+                            ex.getErrors().forEach(err ->
+                                    System.out.println("(!) " + err));
+                        }
+                    }
+                    case "a" -> {
+                        client = authenticate(reader);
+                        if (client.isEmpty()) {
+                            System.out.println("(!) Oops, wrong credentials were entered");
+                        }
+                    }
                     case "q" -> {
                         return null;
                     }
@@ -47,7 +64,7 @@ public class AuthenticationApplication {
         }
     }
 
-    private static Optional<ClientResponse> register(BufferedReader reader) throws IOException {
+    private static Optional<ClientResponse> register(BufferedReader reader) throws IOException, ValidationException {
         System.out.println("Register: ");
 
         System.out.print("\tusername: ");
@@ -59,11 +76,15 @@ public class AuthenticationApplication {
         System.out.print("\tpassword: ");
         String password = reader.readLine();
 
-        clientService.save(ClientRequest.builder()
+        ClientRequest request = ClientRequest.builder()
                 .username(username)
                 .email(email)
                 .notHashedPassword(password)
-                .build());
+                .build();
+
+        clientValidator.validate(request);
+
+        clientService.save(request);
 
         return clientService.findByEmail(email);
     }
@@ -79,9 +100,7 @@ public class AuthenticationApplication {
 
         AuthenticationService.Credentials credentials = new AuthenticationService.Credentials(email, password);
         Optional<ClientResponse> client = authenticationService.authenticate(credentials);
-        if (client.isEmpty()) {
-            System.out.println("(!) Oops, wrong credentials were entered");
-        }
+
         return client;
     }
 }
