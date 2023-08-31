@@ -13,6 +13,10 @@ import by.sakujj.mappers.BankMapper;
 import by.sakujj.mappers.ClientMapper;
 import by.sakujj.mappers.MonetaryTransactionMapper;
 import by.sakujj.services.*;
+import by.sakujj.validators.AccountValidator;
+import by.sakujj.validators.BankValidator;
+import by.sakujj.validators.ClientValidator;
+import by.sakujj.validators.MonetaryTransactionValidator;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.mapstruct.factory.Mappers;
@@ -79,6 +83,7 @@ public class ApplicationContext {
         putDAO(context);
         putMappers(context);
         putServices(context);
+        putValidators(context);
 
         return context;
     }
@@ -88,6 +93,23 @@ public class ApplicationContext {
         context.put(BankDAO.class, new BankDAO());
         context.put(ClientDAO.class, new ClientDAO());
         context.put(MonetaryTransactionDAO.class, new MonetaryTransactionDAO());
+    }
+
+    private static void putValidators(ApplicationContext context) {
+        context.put(ClientValidator.class, new ClientValidator(
+                context.getByClass(ClientService.class)
+        ));
+        context.put(BankValidator.class, new BankValidator(
+                context.getByClass(BankService.class)
+        ));
+        context.put(AccountValidator.class, new AccountValidator(
+                context.getByClass(BankService.class),
+                context.getByClass(AccountService.class),
+                context.getByClass(ClientService.class)
+        ));
+        context.put(MonetaryTransactionValidator.class, new MonetaryTransactionValidator(
+                context.getByClass(AccountService.class)
+        ));
     }
     private static void putMappers(ApplicationContext context) {
         context.put(BankMapper.class, Mappers.getMapper(BankMapper.class));
