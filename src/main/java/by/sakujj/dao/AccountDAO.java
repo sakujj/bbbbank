@@ -90,6 +90,22 @@ public class AccountDAO implements DAO<Account, String> {
         }
     }
 
+    public boolean updateMoneyAmountByPercentage(BigDecimal percentage, String id, Connection connection) {
+        try (PreparedStatement statement = connection.prepareStatement("""
+                UPDATE Account
+                SET money_amount = money_amount + (money_amount * ?) / 100.0
+                WHERE account_id = ?"""
+        )) {
+            statement.setObject(1, percentage);
+            statement.setObject(2, id);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public Optional<Account> findById(String id, Connection connection) throws DAOException {
         return findByAttr(FIND_BY_ID, id, connection).stream().findAny();

@@ -112,6 +112,30 @@ public class AccountDAOTests extends AbstractConnectionRelatedTests {
     }
 
     @Nested
+    class updateMoneyAmountByPercentage {
+        @Rollback
+        @ParameterizedTest
+        @MethodSource
+        void shouldUpdateByPercentage(BigDecimal percentage, String id, BigDecimal expected) throws DAOException {
+            accountDAO.updateMoneyAmountByPercentage(percentage, id, getConnection());
+            Optional<Account> account = accountDAO.findById(id, getConnection());
+
+            assertThat(account).isPresent();
+            assertThat(account.get().getMoneyAmount()).isEqualTo(expected);
+        }
+
+        static Stream<Arguments> shouldUpdateByPercentage() {
+            return Stream.of(
+                    arguments(
+                            new BigDecimal("11.2525"),
+                            "123412341234123412341234XX00",
+                            new BigDecimal("2225.05")
+                    )
+            );
+        }
+    }
+
+    @Nested
     @DisplayName("updateMoneyAmountById (BigDecimal, String, Connection)")
     class updateMoneyAmountById {
         @Rollback
@@ -158,7 +182,7 @@ public class AccountDAOTests extends AbstractConnectionRelatedTests {
         @ParameterizedTest
         @MethodSource
         void shouldNotSubtractMoreThanOneHas(BigDecimal moneyAmount, String accountId) throws DAOException {
-            assertThatThrownBy( () ->
+            assertThatThrownBy(() ->
                     accountDAO.updateMoneyAmountById(
                             moneyAmount,
                             accountId,
