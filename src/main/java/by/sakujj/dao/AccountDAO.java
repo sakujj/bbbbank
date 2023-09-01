@@ -90,7 +90,7 @@ public class AccountDAO implements DAO<Account, String> {
         }
     }
 
-    public boolean updateMoneyAmountByPercentage(BigDecimal percentage, String id, Connection connection) {
+    public boolean updateMoneyAmountByPercentage(BigDecimal percentage, String id, Connection connection) throws DAOException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 UPDATE Account
                 SET money_amount = money_amount + (money_amount * ?) / 100.0
@@ -102,7 +102,7 @@ public class AccountDAO implements DAO<Account, String> {
             return statement.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DAOException(e);
         }
     }
 
