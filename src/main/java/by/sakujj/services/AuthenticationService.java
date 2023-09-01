@@ -1,10 +1,12 @@
 package by.sakujj.services;
 
 import by.sakujj.dto.ClientResponse;
+import by.sakujj.exceptions.DAOException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 public interface AuthenticationService {
@@ -16,5 +18,5 @@ public interface AuthenticationService {
         private String password;
     }
 
-    Optional<ClientResponse> authenticate(Credentials credentials);
+    Optional<ClientResponse> authenticate(Credentials credentials) ;
 }

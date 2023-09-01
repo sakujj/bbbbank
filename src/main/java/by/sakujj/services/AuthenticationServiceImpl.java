@@ -3,6 +3,7 @@ package by.sakujj.services;
 import by.sakujj.connection.ConnectionPool;
 import by.sakujj.dao.ClientDAO;
 import by.sakujj.dto.ClientResponse;
+import by.sakujj.exceptions.DAOException;
 import by.sakujj.hashing.Hasher;
 import by.sakujj.mappers.ClientMapper;
 import by.sakujj.model.Client;
@@ -10,6 +11,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -21,7 +23,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
     private final ConnectionPool connectionPool;
     private final Hasher hasher;
 
-    @SneakyThrows
     public Optional<ClientResponse> authenticate(AuthenticationService.Credentials credentials) {
         try (Connection connection = connectionPool.getConnection()) {
             Optional<Client> foundClient = clientDAO.findByEmail(credentials.getEmail(), connection);
@@ -35,6 +36,8 @@ public class AuthenticationServiceImpl implements AuthenticationService{
             }
 
             return Optional.empty();
+        } catch (DAOException | SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }
