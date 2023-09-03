@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id("io.freefair.lombok") version "8.2.2"
+    id 'application'
+    id 'jacoco'
 }
 
 group = 'by.sakujj'
@@ -11,22 +13,74 @@ java {
     targetCompatibility '17'
 }
 
+application {
+    mainClass = 'by.sakujj.application.ApplicationRunner'
+    run {
+        standardInput = System.in
+    }
+    processResources {
+        from("$rootDir/yamlFiles")
+    }
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation 'org.postgresql:postgresql:42.6.0'
-    // https://mvnrepository.com/artifact/org.mindrot/jbcrypt
     implementation 'org.mindrot:jbcrypt:0.4'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    implementation 'org.apache.pdfbox:pdfbox:3.0.0'
+    implementation 'org.yaml:snakeyaml:2.2'
 
 
-    testImplementation platform('org.junit:junit-bom:5.9.1')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.0.0-M4'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
 test {
     useJUnitPlatform()
     maxParallelForks = Runtime.runtime.availableProcessors()
+
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "by/sakujj/**/exceptions/*",
+                    "by/sakujj/**/model/*",
+            ])
+        }))
+    }
+
+    dependsOn test // tests are required to run before generating the report
+}
+
+jar {
+    duplicatesStrategy = "EXCLUDE"
+    manifest {
+        attributes "Main-Class": application.mainClass
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
