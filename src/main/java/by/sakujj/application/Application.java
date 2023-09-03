@@ -21,8 +21,8 @@ public class Application {
             bankApplication = new BankApplication(authenticatedClient);
             bankApplication.start();
         }
-
         ApplicationContext.cleanup(ApplicationContext.getInstance());
+        fileProcessorApplication.stop();
     }
 }
 
