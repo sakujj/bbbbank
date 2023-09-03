@@ -57,7 +57,7 @@ public class MonetaryTransactionServiceImpl implements MonetaryTransactionServic
         }
     }
 
-    private Optional<MonetaryTransactionResponse> getMonetaryTransactionResponse(MonetaryTransactionRequest request, Connection connection) throws DAOException {
+    public Optional<MonetaryTransactionResponse> getMonetaryTransactionResponse(MonetaryTransactionRequest request, Connection connection) throws DAOException {
         LocalDateTime timeWhenCommitted = LocalDateTime.now();
 
         MonetaryTransactionRequest.builder()
@@ -115,8 +115,7 @@ public class MonetaryTransactionServiceImpl implements MonetaryTransactionServic
     }
 
     @Override
-    public void close() throws Exception {
-
+    public void close() {
     }
 }
 
