@@ -8,6 +8,7 @@ import by.sakujj.exceptions.DAOException;
 import by.sakujj.model.*;
 import lombok.Setter;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
@@ -26,6 +27,8 @@ public abstract class MonetaryTransactionMapper {
         return value.orElse(null);
     }
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target="timeWhenCommitted", ignore = true)
     public abstract MonetaryTransaction fromRequest(MonetaryTransactionRequest request);
 
     public MonetaryTransactionResponse toResponse(MonetaryTransaction monetaryTransaction, Connection connection) throws DAOException {
