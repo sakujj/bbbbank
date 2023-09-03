@@ -2,17 +2,19 @@ package by.sakujj.application.components;
 
 import by.sakujj.context.ApplicationContext;
 import by.sakujj.services.AccountService;
+import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-
+@Slf4j
 public class FileProcessorApplication {
     private static final ApplicationContext context = ApplicationContext.getInstance();
 
@@ -57,13 +59,13 @@ public class FileProcessorApplication {
             public void run() {
                 InputStream inputStream = null;
                 try {
-                    inputStream = this.getClass()
-                            .getClassLoader()
-                            .getResourceAsStream(yamlFileName);
+                    inputStream = new FileInputStream("./yamlFiles/" + yamlFileName);
                     Iterable<Object> list = yamlFile.loadAll(inputStream);
 
                     List<AccountIdToPercentage> accountIdsToPercentage = (List<AccountIdToPercentage>) list.iterator().next();
                     accountIdsToPercentage.forEach(x -> accountService.updateMoneyAmountByPercentage(x.percent, x.accountId));
+                } catch (Exception e) {
+                  log.error("INCORRECT yaml file {} FORMAT or the file does not exist", yamlFileName);
                 } finally {
                     if (inputStream != null) {
                         try {
