@@ -1,0 +1,39 @@
+services:
+  app:
+    container_name: sakujj_clever_bank
+    build: .
+    networks:
+      - sakujj_net
+    depends_on:
+    - postgres
+    - postgres-test
+    volumes:
+      - ./check:/app/check
+      - ./yamlFiles:/app/yamlFiles
+
+  postgres:
+    container_name: sakujj_postgres_clever_bank
+    build:
+      context: database
+      dockerfile: ./Dockerfile
+    volumes:
+      - sakujj_pg_data_clever_bank:/var/lib/postgresql/data
+    networks:
+      - sakujj_net
+
+  postgres-test:
+    container_name: sakujj_postgres_clever_bank_test
+    build:
+      context: database
+      dockerfile: ./Dockerfile-test
+    command: -p 5433
+    volumes:
+      - sakujj_pg_data_clever_bank_test:/var/lib/postgresql/data
+    networks:
+      - sakujj_net
+
+networks:
+  sakujj_net:
+volumes:
+  sakujj_pg_data_clever_bank:
+  sakujj_pg_data_clever_bank_test:
