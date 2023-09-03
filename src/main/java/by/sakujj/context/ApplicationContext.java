@@ -23,6 +23,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import static by.sakujj.connection.ConnectionPoolImpl.PROD_PROPERTIES;
 import static by.sakujj.connection.ConnectionPoolImpl.TEST_PROPERTIES;
@@ -159,7 +160,8 @@ public class ApplicationContext {
                         context.getByClass(MonetaryTransactionMapper.class),
                         context.getByClass(AccountDAO.class),
                         context.getByClass(ConnectionPool.class)
-                )
+                ),
+                Executors.newFixedThreadPool(1)
         );
         context.put(MonetaryTransactionService.class, monetaryTransactionService);
     }

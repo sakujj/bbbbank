@@ -42,6 +42,9 @@ public class FileProcessorApplication {
         }
     }
 
+    public void stop() {
+        timer.cancel();
+    }
     public FileProcessorApplication(String yamlFileName) {
         var ctr = new ListConstructor<>(AccountIdToPercentage.class);
         yamlFile = new Yaml(ctr);
