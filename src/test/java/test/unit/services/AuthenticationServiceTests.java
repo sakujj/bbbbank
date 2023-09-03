@@ -112,6 +112,17 @@ public class AuthenticationServiceTests {
 
     @Test
     @Execution(ExecutionMode.SAME_THREAD)
+    void shouldThrowDAOExceptionWrongDAO() throws DAOException {
+        Mockito.when(clientDAO.findByEmail(Mockito.any(), Mockito.any()))
+                .thenThrow(DAOException.class);
+
+        assertThatThrownBy(() ->
+                authenticationServiceImpl.authenticate(new AuthenticationService.Credentials("em", "pass")))
+                .hasCauseInstanceOf(DAOException.class);
+    }
+
+    @Test
+    @Execution(ExecutionMode.SAME_THREAD)
     void shouldThrowRuntimeExceptionWrongConnection() throws SQLException {
         Mockito.when(connectionPool.getConnection())
                 .thenThrow(new SQLException());
